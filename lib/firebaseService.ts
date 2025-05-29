@@ -15,10 +15,11 @@ import {
   where,
 } from "firebase/firestore"
 
+// Interfaces
 export interface User {
   id?: string
   email: string
-  password?: string // Only used for registration, not stored in plain text
+  password?: string
   companyName: string
   contactPerson: string
   phone?: string
@@ -29,8 +30,8 @@ export interface User {
 
 export interface MachineData {
   id?: string
-  userId: string // Add userId for data isolation
-  companyId: string // Add companyId for additional isolation
+  userId: string
+  companyId: string
   machineName: string
   investmentData: {
     machineCost: number
@@ -126,32 +127,24 @@ export interface MachineData {
 const MACHINES_COLLECTION = "machines"
 const USERS_COLLECTION = "users"
 
-// User Authentication Functions
+const isFirebaseAvailable = () => typeof db !== "undefined" && db !== null
+
+// === Auth Functions ===
 export const registerUser = async (userData: Omit<User, "id" | "createdAt" | "updatedAt">): Promise<string> => {
   try {
     if (!isFirebaseAvailable()) {
-      // Fallback to localStorage
       const users = JSON.parse(localStorage.getItem("registeredUsers") || "[]")
-
-      // Check if email already exists
       if (users.find((u: User) => u.email === userData.email)) {
         throw new Error("Email already registered")
       }
 
       const id = `local-user-${Date.now()}`
-      const newUser = {
-        ...userData,
-        id,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }
-
+      const newUser = { ...userData, id, createdAt: new Date(), updatedAt: new Date() }
       users.push(newUser)
       localStorage.setItem("registeredUsers", JSON.stringify(users))
       return id
     }
 
-    // Check if email already exists
     const existingUsers = await getDocs(query(collection(db, USERS_COLLECTION), where("email", "==", userData.email)))
     if (!existingUsers.empty) {
       throw new Error("Email already registered")
@@ -172,43 +165,28 @@ export const registerUser = async (userData: Omit<User, "id" | "createdAt" | "up
 export const loginUser = async (email: string, password: string): Promise<User> => {
   try {
     if (!isFirebaseAvailable()) {
-      // Fallback to localStorage
       const users = JSON.parse(localStorage.getItem("registeredUsers") || "[]")
       const user = users.find((u: User) => u.email === email && u.password === password)
-
-      if (!user) {
-        throw new Error("Invalid credentials")
-      }
-
+      if (!user) throw new Error("Invalid credentials")
       return user
     }
 
     const usersQuery = query(collection(db, USERS_COLLECTION), where("email", "==", email))
     const querySnapshot = await getDocs(usersQuery)
 
-    if (querySnapshot.empty) {
-      throw new Error("Invalid credentials")
-    }
-
+    if (querySnapshot.empty) throw new Error("Invalid credentials")
     const userDoc = querySnapshot.docs[0]
     const userData = { id: userDoc.id, ...userDoc.data() } as User
-
-    // In a real app, you'd use proper password hashing
-    // For demo purposes, we're doing simple comparison
-    if (userData.password !== password) {
-      throw new Error("Invalid credentials")
-    }
-
+    if (userData.password !== password) throw new Error("Invalid credentials")
     return userData
   } catch (error) {
-    console.error("Error logging in:", error)
+    console.error("Login error:", error)
     throw error
   }
 }
 
 export const getCurrentUser = (): User | null => {
   if (typeof window === "undefined") return null
-
   const userData = localStorage.getItem("currentUser")
   return userData ? JSON.parse(userData) : null
 }
@@ -226,33 +204,27 @@ export const clearCurrentUser = (): void => {
   }
 }
 
-// Updated machine functions with user isolation
+// === Machine Functions ===
 export const saveMachine = async (machineData: Omit<MachineData, "userId" | "companyId">): Promise<string> => {
   try {
     const currentUser = getCurrentUser()
-    if (!currentUser) {
-      throw new Error("User not authenticated")
-    }
+    if (!currentUser) throw new Error("User not authenticated")
 
     const machineWithUser: MachineData = {
       ...machineData,
       userId: currentUser.id!,
-      companyId: currentUser.id!, // Using user ID as company ID for simplicity
+      companyId: currentUser.id!,
     }
 
     if (!isFirebaseAvailable()) {
-      console.warn("Firebase not available, using local storage")
       const userMachines = JSON.parse(localStorage.getItem(`machines_${currentUser.id}`) || "[]")
       const id = machineWithUser.id || `local-${Date.now()}`
       const updatedMachine = { ...machineWithUser, id, updatedAt: new Date() }
 
       if (machineWithUser.id) {
         const index = userMachines.findIndex((m: MachineData) => m.id === machineWithUser.id)
-        if (index >= 0) {
-          userMachines[index] = updatedMachine
-        } else {
-          userMachines.push(updatedMachine)
-        }
+        if (index >= 0) userMachines[index] = updatedMachine
+        else userMachines.push(updatedMachine)
       } else {
         updatedMachine.createdAt = new Date()
         userMachines.push(updatedMachine)
@@ -263,21 +235,16 @@ export const saveMachine = async (machineData: Omit<MachineData, "userId" | "com
     }
 
     if (machineWithUser.id) {
-      // Update existing machine - ensure it belongs to current user
       const machineRef = doc(db, MACHINES_COLLECTION, machineWithUser.id)
-      const existingMachine = await getDoc(machineRef)
+      const existing = await getDoc(machineRef)
 
-      if (!existingMachine.exists() || existingMachine.data().userId !== currentUser.id) {
+      if (!existing.exists() || existing.data().userId !== currentUser.id) {
         throw new Error("Machine not found or access denied")
       }
 
-      await updateDoc(machineRef, {
-        ...machineWithUser,
-        updatedAt: serverTimestamp(),
-      })
+      await updateDoc(machineRef, { ...machineWithUser, updatedAt: serverTimestamp() })
       return machineWithUser.id
     } else {
-      // Create new machine
       const docRef = await addDoc(collection(db, MACHINES_COLLECTION), {
         ...machineWithUser,
         createdAt: serverTimestamp(),
@@ -294,32 +261,23 @@ export const saveMachine = async (machineData: Omit<MachineData, "userId" | "com
 export const getMachine = async (id: string): Promise<MachineData | null> => {
   try {
     const currentUser = getCurrentUser()
-    if (!currentUser) {
-      throw new Error("User not authenticated")
-    }
+    if (!currentUser) throw new Error("User not authenticated")
 
     if (!isFirebaseAvailable()) {
-      const userMachines = JSON.parse(localStorage.getItem(`machines_${currentUser.id}`) || "[]")
-      return userMachines.find((m: MachineData) => m.id === id) || null
+      const machines = JSON.parse(localStorage.getItem(`machines_${currentUser.id}`) || "[]")
+      return machines.find((m: MachineData) => m.id === id) || null
     }
 
     const docRef = doc(db, MACHINES_COLLECTION, id)
     const docSnap = await getDoc(docRef)
+    if (!docSnap.exists()) return null
 
-    if (docSnap.exists()) {
-      const machineData = { id: docSnap.id, ...docSnap.data() } as MachineData
+    const data = { id: docSnap.id, ...docSnap.data() } as MachineData
+    if (data.userId !== currentUser.id) throw new Error("Access denied")
 
-      // Ensure machine belongs to current user
-      if (machineData.userId !== currentUser.id) {
-        throw new Error("Access denied")
-      }
-
-      return machineData
-    } else {
-      return null
-    }
+    return data
   } catch (error) {
-    console.error("Error getting machine:", error)
+    console.error("Get machine error:", error)
     return null
   }
 }
@@ -327,68 +285,27 @@ export const getMachine = async (id: string): Promise<MachineData | null> => {
 export const getAllMachines = async (): Promise<MachineData[]> => {
   try {
     const currentUser = getCurrentUser()
-    if (!currentUser) {
-      return []
-    }
+    if (!currentUser) return []
 
     if (!isFirebaseAvailable()) {
-      console.warn("Firebase not available, using local storage")
-      const userMachines = JSON.parse(localStorage.getItem(`machines_${currentUser.id}`) || "[]")
-      return userMachines
+      return JSON.parse(localStorage.getItem(`machines_${currentUser.id}`) || "[]")
     }
 
-    // Query only machines belonging to current user
-    const userMachinesQuery = query(collection(db, MACHINES_COLLECTION), where("userId", "==", currentUser.id))
-    const querySnapshot = await getDocs(userMachinesQuery)
-    const machines: MachineData[] = []
+    const machinesQuery = query(collection(db, MACHINES_COLLECTION), where("userId", "==", currentUser.id))
+    const snapshot = await getDocs(machinesQuery)
 
-    querySnapshot.forEach((doc) => {
+    const machines: MachineData[] = []
+    snapshot.forEach((doc) => {
       machines.push({ id: doc.id, ...doc.data() } as MachineData)
     })
 
     return machines
   } catch (error) {
-    console.error("Error getting machines:", error)
-    // Fallback to localStorage
+    console.error("Get all machines error:", error)
     const currentUser = getCurrentUser()
     if (currentUser) {
-      const userMachines = JSON.parse(localStorage.getItem(`machines_${currentUser.id}`) || "[]")
-      return userMachines
+      return JSON.parse(localStorage.getItem(`machines_${currentUser.id}`) || "[]")
     }
     return []
   }
-}
-
-export const deleteMachine = async (id: string): Promise<void> => {
-  try {
-    const currentUser = getCurrentUser()
-    if (!currentUser) {
-      throw new Error("User not authenticated")
-    }
-
-    if (!isFirebaseAvailable()) {
-      const userMachines = JSON.parse(localStorage.getItem(`machines_${currentUser.id}`) || "[]")
-      const filteredMachines = userMachines.filter((m: MachineData) => m.id !== id)
-      localStorage.setItem(`machines_${currentUser.id}`, JSON.stringify(filteredMachines))
-      return
-    }
-
-    // Ensure machine belongs to current user before deleting
-    const machineRef = doc(db, MACHINES_COLLECTION, id)
-    const machineDoc = await getDoc(machineRef)
-
-    if (!machineDoc.exists() || machineDoc.data().userId !== currentUser.id) {
-      throw new Error("Machine not found or access denied")
-    }
-
-    await deleteDoc(machineRef)
-  } catch (error) {
-    console.error("Error deleting machine:", error)
-    throw error
-  }
-}
-
-// Remove mock data and update isFirebaseAvailable check
-const isFirebaseAvailable = () => {
-  return db !== null
 }

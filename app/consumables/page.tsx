@@ -97,8 +97,8 @@ export default function ConsumablesPage() {
       <main className="md:ml-64 pt-4">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           {/* Breadcrumb */}
-          <div className="flex items-center space-x-2 text-sm text-gray-600 mb-6">
-            <Link href="/dashboard" className="hover:text-blue-600">
+          {/* <div className="flex items-center space-x-2 text-sm text-gray-600 mb-6"> */}
+            {/* <Link href="/dashboard" className="hover:text-blue-600">
               Dashboard
             </Link>
             <span>/</span>
@@ -107,13 +107,13 @@ export default function ConsumablesPage() {
             </Link>
             <span>/</span>
             <span>...</span>
-            <span>/</span>
-            <Link href="/power-consumption" className="hover:text-blue-600">
+            <span>/</span> */}
+            {/* <Link href="/power-consumption" className="hover:text-blue-600">
               Power
             </Link>
-            <span>/</span>
-            <span className="text-gray-900 font-medium">Consumables</span>
-          </div>
+            <span>/</span> */}
+            {/* <span className="text-gray-900 font-medium">Consumables</span>
+          </div> */}
 
           {/* Header */}
           <div className="mb-8">

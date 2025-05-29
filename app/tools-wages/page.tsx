@@ -96,7 +96,7 @@ export default function ToolsWagesPage() {
       <main className="md:ml-64 pt-4">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           {/* Breadcrumb */}
-          <div className="flex items-center space-x-2 text-sm text-gray-600 mb-6">
+          {/* <div className="flex items-center space-x-2 text-sm text-gray-600 mb-6">
             <Link href="/dashboard" className="hover:text-blue-600">
               Dashboard
             </Link>
@@ -118,7 +118,7 @@ export default function ToolsWagesPage() {
             </Link>
             <span>/</span>
             <span className="text-gray-900 font-medium">Tools & Wages</span>
-          </div>
+          </div> */}
 
           {/* Header */}
           <div className="mb-8">

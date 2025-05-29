@@ -130,7 +130,7 @@ export default function CalculationPage() {
       <main className="md:ml-64 pt-4">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           {/* Breadcrumb */}
-          <div className="flex items-center space-x-2 text-sm text-gray-600 mb-6">
+          {/* <div className="flex items-center space-x-2 text-sm text-gray-600 mb-6">
             <Link href="/dashboard" className="hover:text-blue-600">
               Dashboard
             </Link>
@@ -146,7 +146,7 @@ export default function CalculationPage() {
             </Link>
             <span>/</span>
             <span className="text-gray-900 font-medium">Final Calculation</span>
-          </div>
+          </div> */}
 
           {/* Header */}
           <div className="mb-8">
