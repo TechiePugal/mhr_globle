@@ -320,7 +320,7 @@ export const deleteMachine = async (id: string): Promise<void> => {
       return
     }
 
-    await deleteDoc(doc(db,  id))
+    await deleteDoc(doc(db, MACHINES_COLLECTION, id))
   } catch (error) {
     console.error("Error deleting machine:", error)
     // Fallback to localStorage
