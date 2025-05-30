@@ -136,7 +136,8 @@ export default function Dashboard() {
 
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
+            <a href="/machines">
+            <Card  className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -147,7 +148,9 @@ export default function Dashboard() {
                 </div>
               </CardContent>
             </Card>
+            </a>
 
+            <a href="/machines">
             <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
@@ -159,7 +162,7 @@ export default function Dashboard() {
                 </div>
               </CardContent>
             </Card>
-
+</a><a href="/machines">
             <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
@@ -171,7 +174,7 @@ export default function Dashboard() {
                 </div>
               </CardContent>
             </Card>
-
+</a><a href="/machines">
             <Card className="bg-gradient-to-r from-orange-500 to-orange-600 text-white">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
@@ -183,7 +186,9 @@ export default function Dashboard() {
                 </div>
               </CardContent>
             </Card>
+            </a>
           </div>
+
 
           {/* Quick Actions */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
