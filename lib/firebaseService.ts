@@ -309,3 +309,23 @@ export const getAllMachines = async (): Promise<MachineData[]> => {
     return []
   }
 }
+
+export const deleteMachine = async (id: string): Promise<void> => {
+  try {
+    if (!isFirebaseAvailable()) {
+      console.warn("Firebase not available, using local storage")
+      const machines = JSON.parse(localStorage.getItem("savedMachines") || "[]")
+      const filteredMachines = machines.filter((m: MachineData) => m.id !== id)
+      localStorage.setItem("savedMachines", JSON.stringify(filteredMachines))
+      return
+    }
+
+    await deleteDoc(doc(db,  id))
+  } catch (error) {
+    console.error("Error deleting machine:", error)
+    // Fallback to localStorage
+    const machines = JSON.parse(localStorage.getItem("savedMachines") || "[]")
+    const filteredMachines = machines.filter((m: MachineData) => m.id !== id)
+    localStorage.setItem("savedMachines", JSON.stringify(filteredMachines))
+  }
+}
