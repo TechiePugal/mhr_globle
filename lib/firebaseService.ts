@@ -29,6 +29,7 @@ export interface User {
 }
 
 export interface MachineData {
+  imageUrl: string
   id?: string
   userId: string
   companyId: string

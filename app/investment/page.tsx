@@ -169,10 +169,10 @@ export default function InvestmentPage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           {/* Breadcrumb */}
           {/* <div className="flex items-center space-x-2 text-sm text-gray-600 mb-6"> */}
-            {/* <Link href="/dashboard" className="hover:text-blue-600">
+          {/* <Link href="/dashboard" className="hover:text-blue-600">
               Dashboard
             </Link> */}
-            {/* <span className="text-gray-900 font-medium">Investment Details</span> */}
+          {/* <span className="text-gray-900 font-medium">Investment Details</span> */}
           {/* </div> */}
 
 
@@ -187,15 +187,15 @@ export default function InvestmentPage() {
                 <p className="text-gray-600">Enter the basic investment information for your machine</p>
               </div>
             </div>
-    <div>
-      <Image
-        src="https://cdn.corporatefinanceinstitute.com/assets/income-investing-1024x576.jpeg"
-        alt="Remote Image"
-        width={900} // original width for aspect ratio
-        height={300} // original height for aspect ratio
-        style={{ maxWidth: '900px', maxHeight: '200px', width: '100%', height: 'auto' }}
-      />
-    </div>
+            <div>
+              <Image
+                src="https://cdn.corporatefinanceinstitute.com/assets/income-investing-1024x576.jpeg"
+                alt="Remote Image"
+                width={900} // original width for aspect ratio
+                height={300} // original height for aspect ratio
+                style={{ maxWidth: '900px', maxHeight: '200px', width: '100%', height: 'auto' }}
+              />
+            </div>
             <Alert className="bg-blue-50 border-blue-200">
               <Info className="w-4 h-4 text-blue-600" />
               <AlertDescription className="text-blue-800">
@@ -206,91 +206,105 @@ export default function InvestmentPage() {
 
           <div className="space-y-6">
             {/* Basic Information */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Basic Information</CardTitle>
-                <CardDescription>Enter the fundamental details about your machine</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="md:col-span-2 space-y-2">
-                    <Label htmlFor="machineName" className="text-sm font-medium">
-                      Machine Name <span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      id="machineName"
-                      value={machineName}
-                      onChange={(e) => handleMachineNameChange(e.target.value)}
-                      placeholder="e.g., CNC Lathe Machine"
-                      className={`h-11 ${errors.machineName ? "border-red-500" : ""}`}
-                    />
-                    {errors.machineName && <p className="text-sm text-red-600">{errors.machineName}</p>}
-                  </div>
+<Card>
+  <CardHeader>
+    <CardTitle>Basic Information</CardTitle>
+    <CardDescription>Enter the fundamental details about your machine</CardDescription>
+  </CardHeader>
+  <CardContent className="space-y-6">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Image section */}
+      <div className="flex items-center justify-center md:col-span-1">
+<img
+  src="https://thumbs.dreamstime.com/b/close-up-milling-machine-lots-gold-flakes-ai-332839930.jpg" // <-- Replace with your actual image path
+  alt="Machine Info"
+  className="h-52 md:h-72 lg:h-80 w-full max-w-md mx-auto object-contain rounded-xl shadow-md"
+/>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="machineCost" className="text-sm font-medium">
-                      Machine Cost (₹) <span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      id="machineCost"
-                      type="number"
-                      value={formData.machineCost || ""}
-                      onChange={(e) => handleInputChange("machineCost", e.target.value)}
-                      placeholder="e.g., 1500000"
-                      className={`h-11 ${errors.machineCost ? "border-red-500" : ""}`}
-                    />
-                    {errors.machineCost && <p className="text-sm text-red-600">{errors.machineCost}</p>}
-                  </div>
+      </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="lifeOfMachine" className="text-sm font-medium">
-                      Life of Machine (Years) <span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      id="lifeOfMachine"
-                      type="number"
-                      value={formData.lifeOfMachine || ""}
-                      onChange={(e) => handleInputChange("lifeOfMachine", e.target.value)}
-                      placeholder="e.g., 10"
-                      className={`h-11 ${errors.lifeOfMachine ? "border-red-500" : ""}`}
-                    />
-                    {errors.lifeOfMachine && <p className="text-sm text-red-600">{errors.lifeOfMachine}</p>}
-                  </div>
+      {/* Form section */}
+      <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="md:col-span-2 space-y-2">
+          <Label htmlFor="machineName" className="text-sm font-medium">
+            Machine Name <span className="text-red-500">*</span>
+          </Label>
+          <Input
+            id="machineName"
+            value={machineName}
+            onChange={(e) => handleMachineNameChange(e.target.value)}
+            placeholder="e.g., CNC Lathe Machine"
+            className={`h-11 ${errors.machineName ? "border-red-500" : ""}`}
+          />
+          {errors.machineName && <p className="text-sm text-red-600">{errors.machineName}</p>}
+        </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="workingHoursPerDay" className="text-sm font-medium">
-                      Working Hours per Day <span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      id="workingHoursPerDay"
-                      type="number"
-                      value={formData.workingHoursPerDay || ""}
-                      onChange={(e) => handleInputChange("workingHoursPerDay", e.target.value)}
-                      placeholder="e.g., 8"
-                      className={`h-11 ${errors.workingHoursPerDay ? "border-red-500" : ""}`}
-                    />
-                    {errors.workingHoursPerDay && <p className="text-sm text-red-600">{errors.workingHoursPerDay}</p>}
-                  </div>
+        <div className="space-y-2">
+          <Label htmlFor="machineCost" className="text-sm font-medium">
+            Machine Cost (₹) <span className="text-red-500">*</span>
+          </Label>
+          <Input
+            id="machineCost"
+            type="number"
+            value={formData.machineCost || ""}
+            onChange={(e) => handleInputChange("machineCost", e.target.value)}
+            placeholder="e.g., 1500000"
+            className={`h-11 ${errors.machineCost ? "border-red-500" : ""}`}
+          />
+          {errors.machineCost && <p className="text-sm text-red-600">{errors.machineCost}</p>}
+        </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="balanceLifeOfMachine" className="text-sm font-medium">
-                      Balance Life of Machine (Years) <span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      id="balanceLifeOfMachine"
-                      type="number"
-                      value={formData.balanceLifeOfMachine || ""}
-                      onChange={(e) => handleInputChange("balanceLifeOfMachine", e.target.value)}
-                      placeholder="e.g., 8"
-                      className={`h-11 ${errors.balanceLifeOfMachine ? "border-red-500" : ""}`}
-                    />
-                    {errors.balanceLifeOfMachine && (
-                      <p className="text-sm text-red-600">{errors.balanceLifeOfMachine}</p>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+        <div className="space-y-2">
+          <Label htmlFor="lifeOfMachine" className="text-sm font-medium">
+            Life of Machine (Years) <span className="text-red-500">*</span>
+          </Label>
+          <Input
+            id="lifeOfMachine"
+            type="number"
+            value={formData.lifeOfMachine || ""}
+            onChange={(e) => handleInputChange("lifeOfMachine", e.target.value)}
+            placeholder="e.g., 10"
+            className={`h-11 ${errors.lifeOfMachine ? "border-red-500" : ""}`}
+          />
+          {errors.lifeOfMachine && <p className="text-sm text-red-600">{errors.lifeOfMachine}</p>}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="workingHoursPerDay" className="text-sm font-medium">
+            Working Hours per Day <span className="text-red-500">*</span>
+          </Label>
+          <Input
+            id="workingHoursPerDay"
+            type="number"
+            value={formData.workingHoursPerDay || ""}
+            onChange={(e) => handleInputChange("workingHoursPerDay", e.target.value)}
+            placeholder="e.g., 8"
+            className={`h-11 ${errors.workingHoursPerDay ? "border-red-500" : ""}`}
+          />
+          {errors.workingHoursPerDay && <p className="text-sm text-red-600">{errors.workingHoursPerDay}</p>}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="balanceLifeOfMachine" className="text-sm font-medium">
+            Balance Life of Machine (Years) <span className="text-red-500">*</span>
+          </Label>
+          <Input
+            id="balanceLifeOfMachine"
+            type="number"
+            value={formData.balanceLifeOfMachine || ""}
+            onChange={(e) => handleInputChange("balanceLifeOfMachine", e.target.value)}
+            placeholder="e.g., 8"
+            className={`h-11 ${errors.balanceLifeOfMachine ? "border-red-500" : ""}`}
+          />
+          {errors.balanceLifeOfMachine && (
+            <p className="text-sm text-red-600">{errors.balanceLifeOfMachine}</p>
+          )}
+        </div>
+      </div>
+    </div>
+  </CardContent>
+</Card>
+
 
             {/* Financial Parameters */}
             <Card>
@@ -300,7 +314,14 @@ export default function InvestmentPage() {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                  {/* Interest Rate */}
                   <div className="space-y-2">
+                    <img
+                      src="https://bsmedia.business-standard.com/_media/bs/img/article/2022-05/05/full/1651774950-0305.jpg?im=FeatureCrop,size=(826,465)"
+                      alt="Interest Icon"
+                      className="w-full h-40 object-contain rounded-md"
+                    />
                     <Label htmlFor="interestRate" className="text-sm font-medium">
                       Interest Rate (%)
                     </Label>
@@ -311,11 +332,17 @@ export default function InvestmentPage() {
                       value={formData.interestRate || ""}
                       onChange={(e) => handleInputChange("interestRate", e.target.value)}
                       placeholder="e.g., 12.5"
-                      className="h-11"
+                      className="h-11 w-full"
                     />
                   </div>
 
+                  {/* Scrap Rate */}
                   <div className="space-y-2">
+                    <img
+                      src="https://scraprate.in/wp-content/uploads/2023/11/Scrap-rate-logo.webp"
+                      alt="Scrap Icon"
+                      className="w-full h-40 object-contain rounded-md"
+                    />
                     <Label htmlFor="scrapRate" className="text-sm font-medium">
                       Scrap Rate (%)
                     </Label>
@@ -326,10 +353,12 @@ export default function InvestmentPage() {
                       value={formData.scrapRate || ""}
                       onChange={(e) => handleInputChange("scrapRate", e.target.value)}
                       placeholder="e.g., 10"
-                      className="h-11"
+                      className="h-11 w-full"
                     />
                   </div>
+
                 </div>
+
               </CardContent>
             </Card>
 
@@ -344,27 +373,42 @@ export default function InvestmentPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="p-4 bg-white rounded-lg border border-green-200">
-                      <div className="text-sm font-medium text-green-800 mb-1">Machine Life (Hours)</div>
-                      <div className="text-2xl font-bold text-green-900">
-                        {calculatedData.machineLifeHours?.toLocaleString()}
+
+                    {/* Machine Life Hours */}
+                    <div className="p-4 bg-white rounded-lg border border-green-200 space-y-2">
+                      <img
+                        src="https://t4.ftcdn.net/jpg/03/02/26/55/360_F_302265500_HcxnXEWpFghwA9FCjAWJXGtc1jQ0kyhs.jpg" // example machine icon
+                        alt="Machine Life Icon"
+                        className="w-full h-32 object-contain"
+                      />
+                      <div className="text-sm font-medium text-green-800">Machine Life (Hours)</div>
+                      <div className="text-xl font-bold text-green-900">
+                        {calculatedData.machineLifeHours.toLocaleString()}
                       </div>
-                      <div className="text-xs text-green-600 mt-1">
+                      <div className="text-xs text-green-600">
                         {formData.lifeOfMachine} years × {formData.workingHoursPerDay} hrs/day × 365 days
                       </div>
                     </div>
 
-                    <div className="p-4 bg-white rounded-lg border border-blue-200">
-                      <div className="text-sm font-medium text-blue-800 mb-1">Current Value of Machine</div>
-                      <div className="text-2xl font-bold text-blue-900">
-                        ₹{calculatedData.currentValueOfMachine?.toLocaleString()}
+                    {/* Current Value of Machine */}
+                    <div className="p-4 bg-white rounded-lg border border-blue-200 space-y-2">
+                      <img
+                        src="https://www.zintilon.com/wp-content/uploads/2024/06/Precision-machining-process-ongoing.jpg" // example currency/money icon
+                        alt="Current Value Icon"
+                        className="w-full h-32 object-contain"
+                      />
+                      <div className="text-sm font-medium text-blue-800">Current Value of Machine</div>
+                      <div className="text-xl font-bold text-blue-900">
+                        ₹{calculatedData.currentValueOfMachine.toLocaleString()}
                       </div>
-                      <div className="text-xs text-blue-600 mt-1">After depreciation calculation</div>
+                      <div className="text-xs text-blue-600">After depreciation calculation</div>
                     </div>
+
                   </div>
                 </CardContent>
               </Card>
             )}
+
 
             {/* Navigation */}
             <div className="flex flex-col sm:flex-row justify-between gap-4 pt-6">

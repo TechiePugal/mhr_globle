@@ -153,149 +153,198 @@ export default function ToolsWagesPage() {
 
           <div className="space-y-6">
             {/* Tool Costs */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Tool Costs</CardTitle>
-                <CardDescription>Enter average monthly tool and equipment costs</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="averageToolCostPerMonth" className="text-sm font-medium">
-                      Average Tool Cost / Month (₹)
-                    </Label>
-                    <Input
-                      id="averageToolCostPerMonth"
-                      type="number"
-                      value={formData.averageToolCostPerMonth || ""}
-                      onChange={(e) => handleInputChange("averageToolCostPerMonth", e.target.value)}
-                      placeholder="e.g., 8000"
-                      className="h-11"
-                    />
-                    <p className="text-xs text-gray-500">
-                      Include cutting tools, measuring instruments, and other consumable tools
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+<Card>
+  <CardHeader>
+    <CardTitle>Tool Costs</CardTitle>
+    <CardDescription>Enter average monthly tool and equipment costs</CardDescription>
+  </CardHeader>
+  <CardContent className="space-y-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      
+      {/* Average Tool Cost Per Month */}
+      <div className="space-y-2">
+        <img
+          src="https://cdn-icons-png.flaticon.com/512/4531/4531781.png"
+          alt="Tool Costs"
+          className="w-full h-40 object-contain rounded-md"
+        />
+        <Label htmlFor="averageToolCostPerMonth" className="text-sm font-medium">
+          Average Tool Cost / Month (₹)
+        </Label>
+        <Input
+          id="averageToolCostPerMonth"
+          type="number"
+          value={formData.averageToolCostPerMonth || ""}
+          onChange={(e) => handleInputChange("averageToolCostPerMonth", e.target.value)}
+          placeholder="e.g., 8000"
+          className="h-11"
+        />
+        <p className="text-xs text-gray-500">
+          Include cutting tools, measuring instruments, and other consumable tools
+        </p>
+      </div>
 
-            {/* Direct Labor Wages */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Direct Labor Wages</CardTitle>
-                <CardDescription>Enter monthly salaries for direct labor involved in machine operation</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="operatorSalaryPerMonth" className="text-sm font-medium">
-                      Operator Salary / Month (₹) <span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      id="operatorSalaryPerMonth"
-                      type="number"
-                      value={formData.operatorSalaryPerMonth || ""}
-                      onChange={(e) => handleInputChange("operatorSalaryPerMonth", e.target.value)}
-                      placeholder="e.g., 25000"
-                      className={`h-11 ${errors.operatorSalaryPerMonth ? "border-red-500" : ""}`}
-                    />
-                    {errors.operatorSalaryPerMonth && (
-                      <p className="text-sm text-red-600">{errors.operatorSalaryPerMonth}</p>
-                    )}
-                    <p className="text-xs text-gray-500">Primary machine operator salary</p>
-                  </div>
+    </div>
+  </CardContent>
+</Card>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="helperSalaryPerMonth" className="text-sm font-medium">
-                      Helper Salary / Month (₹)
-                    </Label>
-                    <Input
-                      id="helperSalaryPerMonth"
-                      type="number"
-                      value={formData.helperSalaryPerMonth || ""}
-                      onChange={(e) => handleInputChange("helperSalaryPerMonth", e.target.value)}
-                      placeholder="e.g., 18000"
-                      className="h-11"
-                    />
-                    <p className="text-xs text-gray-500">Assistant/helper salary (if applicable)</p>
-                  </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="qualityInspectorSalaryPerMonth" className="text-sm font-medium">
-                      Quality Inspector Salary / Month (₹)
-                    </Label>
-                    <Input
-                      id="qualityInspectorSalaryPerMonth"
-                      type="number"
-                      value={formData.qualityInspectorSalaryPerMonth || ""}
-                      onChange={(e) => handleInputChange("qualityInspectorSalaryPerMonth", e.target.value)}
-                      placeholder="e.g., 22000"
-                      className="h-11"
-                    />
-                    <p className="text-xs text-gray-500">Quality control inspector salary</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+<Card>
+  <CardHeader>
+    <CardTitle>Direct Labor Wages</CardTitle>
+    <CardDescription>Enter monthly salaries for direct labor involved in machine operation</CardDescription>
+  </CardHeader>
+  <CardContent className="space-y-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+      {/* Operator Salary */}
+      <div className="space-y-2">
+        <img
+          src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQQ6liuCXghxTJ4ZTD1wpcBBg-_RmrIUe7-fA&s"
+          alt="Operator"
+          className="w-full h-40 object-contain rounded-md"
+        />
+        <Label htmlFor="operatorSalaryPerMonth" className="text-sm font-medium">
+          Operator Salary / Month (₹) <span className="text-red-500">*</span>
+        </Label>
+        <Input
+          id="operatorSalaryPerMonth"
+          type="number"
+          value={formData.operatorSalaryPerMonth || ""}
+          onChange={(e) => handleInputChange("operatorSalaryPerMonth", e.target.value)}
+          placeholder="e.g., 25000"
+          className={`h-11 ${errors.operatorSalaryPerMonth ? "border-red-500" : ""}`}
+        />
+        {errors.operatorSalaryPerMonth && (
+          <p className="text-sm text-red-600">{errors.operatorSalaryPerMonth}</p>
+        )}
+        <p className="text-xs text-gray-500">Primary machine operator salary</p>
+      </div>
+
+      {/* Helper Salary */}
+      <div className="space-y-2">
+        <img
+          src="https://media.graphassets.com/resize=fit:crop,width:1200,height:630/pIMFIKY0SnG2tfY9HncN"
+          alt="Helper"
+          className="w-full h-40 object-contain rounded-md"
+        />
+        <Label htmlFor="helperSalaryPerMonth" className="text-sm font-medium">
+          Helper Salary / Month (₹)
+        </Label>
+        <Input
+          id="helperSalaryPerMonth"
+          type="number"
+          value={formData.helperSalaryPerMonth || ""}
+          onChange={(e) => handleInputChange("helperSalaryPerMonth", e.target.value)}
+          placeholder="e.g., 18000"
+          className="h-11"
+        />
+        <p className="text-xs text-gray-500">Assistant/helper salary (if applicable)</p>
+      </div>
+
+      {/* Quality Inspector Salary */}
+      <div className="space-y-2">
+        <img
+          src="https://careertraining.uis.edu/common/images/1/18310/qualitylarge.jpg"
+          alt="Quality Inspector"
+          className="w-full h-40 object-contain rounded-md"
+        />
+        <Label htmlFor="qualityInspectorSalaryPerMonth" className="text-sm font-medium">
+          Quality Inspector Salary / Month (₹)
+        </Label>
+        <Input
+          id="qualityInspectorSalaryPerMonth"
+          type="number"
+          value={formData.qualityInspectorSalaryPerMonth || ""}
+          onChange={(e) => handleInputChange("qualityInspectorSalaryPerMonth", e.target.value)}
+          placeholder="e.g., 22000"
+          className="h-11"
+        />
+        <p className="text-xs text-gray-500">Quality control inspector salary</p>
+      </div>
+
+    </div>
+  </CardContent>
+</Card>
+
 
             {/* Cost Summary */}
-            {totalMonthlyCost > 0 && (
-              <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-green-200">
-                <CardHeader>
-                  <CardTitle className="text-green-800">Tools & Wages Summary</CardTitle>
-                  <CardDescription className="text-green-700">
-                    Monthly cost breakdown for tools and direct labor
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="p-4 bg-white rounded-lg border border-green-200">
-                      <div className="text-sm font-medium text-green-800 mb-1">Tool Costs/Month</div>
-                      <div className="text-2xl font-bold text-green-900">
-                        ₹{formData.averageToolCostPerMonth.toLocaleString()}
-                      </div>
-                      <div className="text-xs text-green-600 mt-1">Equipment and consumables</div>
-                    </div>
+{totalMonthlyCost > 0 && (
+  <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-green-200">
+    <CardHeader>
+      <CardTitle className="text-green-800">Tools & Wages Summary</CardTitle>
+      <CardDescription className="text-green-700">
+        Monthly cost breakdown for tools and direct labor
+      </CardDescription>
+    </CardHeader>
+    <CardContent>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-                    <div className="p-4 bg-white rounded-lg border border-blue-200">
-                      <div className="text-sm font-medium text-blue-800 mb-1">Direct Labor/Month</div>
-                      <div className="text-2xl font-bold text-blue-900">₹{totalDirectLabor.toLocaleString()}</div>
-                      <div className="text-xs text-blue-600 mt-1">Operator + Helper + QC Inspector</div>
-                    </div>
+        {/* Tool Costs */}
+        <div className="p-4 bg-white rounded-lg border border-green-200 space-y-2">
+          <img
+            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR843YBdkBdZ8UIPPFGnPxqKtEqcE0LhOglJw&s" // tools icon
+            alt="Tools Icon"
+            className="w-full h-32 object-contain"
+          />
+          <div className="text-sm font-medium text-green-800">Tool Costs/Month</div>
+          <div className="text-xl font-bold text-green-900">
+            ₹{formData.averageToolCostPerMonth.toLocaleString()}
+          </div>
+          <div className="text-xs text-green-600">Equipment and consumables</div>
+        </div>
 
-                    <div className="p-4 bg-white rounded-lg border border-purple-200">
-                      <div className="text-sm font-medium text-purple-800 mb-1">Total Monthly Cost</div>
-                      <div className="text-2xl font-bold text-purple-900">₹{totalMonthlyCost.toLocaleString()}</div>
-                      <div className="text-xs text-purple-600 mt-1">Tools + Direct Labor</div>
-                    </div>
-                  </div>
+        {/* Direct Labor */}
+        <div className="p-4 bg-white rounded-lg border border-blue-200 space-y-2">
+          <img
+            src="https://cdn-icons-png.flaticon.com/512/1995/1995532.png" // labor icon
+            alt="Labor Icon"
+            className="w-full h-32 object-contain"
+          />
+          <div className="text-sm font-medium text-blue-800">Direct Labor/Month</div>
+          <div className="text-xl font-bold text-blue-900">₹{totalDirectLabor.toLocaleString()}</div>
+          <div className="text-xs text-blue-600">Operator + Helper + QC Inspector</div>
+        </div>
 
-                  {/* Detailed Breakdown */}
-                  <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-                    <h4 className="font-medium text-gray-900 mb-3">Detailed Breakdown</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                      <div className="flex justify-between">
-                        <span>Tool Costs:</span>
-                        <span>₹{formData.averageToolCostPerMonth.toLocaleString()}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Operator Salary:</span>
-                        <span>₹{formData.operatorSalaryPerMonth.toLocaleString()}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Helper Salary:</span>
-                        <span>₹{formData.helperSalaryPerMonth.toLocaleString()}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>QC Inspector Salary:</span>
-                        <span>₹{formData.qualityInspectorSalaryPerMonth.toLocaleString()}</span>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+        {/* Total Monthly Cost */}
+        <div className="p-4 bg-white rounded-lg border border-purple-200 space-y-2">
+          <img
+            src="https://cdn-icons-png.freepik.com/512/8435/8435647.png" // total cost icon
+            alt="Total Cost Icon"
+            className="w-full h-32 object-contain"
+          />
+          <div className="text-sm font-medium text-purple-800">Total Monthly Cost</div>
+          <div className="text-xl font-bold text-purple-900">₹{totalMonthlyCost.toLocaleString()}</div>
+          <div className="text-xs text-purple-600">Tools + Direct Labor</div>
+        </div>
+      </div>
+
+      {/* Detailed Breakdown */}
+      <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+        <h4 className="font-medium text-gray-900 mb-3">Detailed Breakdown</h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-800">
+          <div className="flex justify-between border-b border-gray-200 pb-1">
+            <span>Tool Costs:</span>
+            <span>₹{formData.averageToolCostPerMonth.toLocaleString()}</span>
+          </div>
+          <div className="flex justify-between border-b border-gray-200 pb-1">
+            <span>Operator Salary:</span>
+            <span>₹{formData.operatorSalaryPerMonth.toLocaleString()}</span>
+          </div>
+          <div className="flex justify-between border-b border-gray-200 pb-1">
+            <span>Helper Salary:</span>
+            <span>₹{formData.helperSalaryPerMonth.toLocaleString()}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>QC Inspector Salary:</span>
+            <span>₹{formData.qualityInspectorSalaryPerMonth.toLocaleString()}</span>
+          </div>
+        </div>
+      </div>
+    </CardContent>
+  </Card>
+)}
+
 
             {/* Navigation */}
             <div className="flex flex-col sm:flex-row justify-between gap-4 pt-6">

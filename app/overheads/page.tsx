@@ -168,272 +168,359 @@ export default function OverheadsPage() {
 
           <div className="space-y-6">
             {/* Management Salaries */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Management & Supervision Salaries</CardTitle>
-                <CardDescription>Enter monthly salaries for management and supervisory roles</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="productionSupervisorSalaryPerMonth" className="text-sm font-medium">
-                      Production Supervisor Salary / Month (₹)
-                    </Label>
-                    <Input
-                      id="productionSupervisorSalaryPerMonth"
-                      type="number"
-                      value={formData.productionSupervisorSalaryPerMonth || ""}
-                      onChange={(e) => handleInputChange("productionSupervisorSalaryPerMonth", e.target.value)}
-                      placeholder="e.g., 45000"
-                      className="h-11"
-                    />
-                  </div>
+<Card>
+  <CardHeader>
+    <CardTitle>Management & Supervision Salaries</CardTitle>
+    <CardDescription>Enter monthly salaries for management and supervisory roles</CardDescription>
+  </CardHeader>
+  <CardContent className="space-y-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                  <div className="space-y-2">
-                    <Label htmlFor="qualitySupervisorSalaryPerMonth" className="text-sm font-medium">
-                      Quality Supervisor Salary / Month (₹)
-                    </Label>
-                    <Input
-                      id="qualitySupervisorSalaryPerMonth"
-                      type="number"
-                      value={formData.qualitySupervisorSalaryPerMonth || ""}
-                      onChange={(e) => handleInputChange("qualitySupervisorSalaryPerMonth", e.target.value)}
-                      placeholder="e.g., 40000"
-                      className="h-11"
-                    />
-                  </div>
+      {/* Production Supervisor */}
+      <div className="space-y-2">
+        <img
+          src="https://www.spherion.com/s3fs-media/sph/public/styles/blog_article/public/2022-07/Production_supervisor_overseeing_a_factory_assembly_line_floor_1600_px.jpg?itok=ZYCYZVr-"
+          alt="Production Supervisor"
+          className="w-full h-45 object-contain rounded-md"
+        />
+        <Label htmlFor="productionSupervisorSalaryPerMonth" className="text-sm font-medium">
+          Production Supervisor Salary / Month (₹)
+        </Label>
+        <Input
+          id="productionSupervisorSalaryPerMonth"
+          type="number"
+          value={formData.productionSupervisorSalaryPerMonth || ""}
+          onChange={(e) => handleInputChange("productionSupervisorSalaryPerMonth", e.target.value)}
+          placeholder="e.g., 45000"
+          className="h-11"
+        />
+      </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="engineerSalaryPerMonth" className="text-sm font-medium">
-                      Engineer Salary / Month (₹)
-                    </Label>
-                    <Input
-                      id="engineerSalaryPerMonth"
-                      type="number"
-                      value={formData.engineerSalaryPerMonth || ""}
-                      onChange={(e) => handleInputChange("engineerSalaryPerMonth", e.target.value)}
-                      placeholder="e.g., 50000"
-                      className="h-11"
-                    />
-                  </div>
+      {/* Quality Supervisor */}
+      <div className="space-y-2">
+        <img
+          src="https://higherlogicdownload.s3.amazonaws.com/NACE/cedda8a4-c3c0-4583-b1b6-3b248e6eb1f2/UploadedImages/Education/ecourse/qcs-hero.jpg"
+          alt="Quality Supervisor"
+          className="w-full h-45 object-contain rounded-md"
+        />
+        <Label htmlFor="qualitySupervisorSalaryPerMonth" className="text-sm font-medium">
+          Quality Supervisor Salary / Month (₹)
+        </Label>
+        <Input
+          id="qualitySupervisorSalaryPerMonth"
+          type="number"
+          value={formData.qualitySupervisorSalaryPerMonth || ""}
+          onChange={(e) => handleInputChange("qualitySupervisorSalaryPerMonth", e.target.value)}
+          placeholder="e.g., 40000"
+          className="h-11"
+        />
+      </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="managerSalaryPerMonth" className="text-sm font-medium">
-                      Manager Salary / Month (₹)
-                    </Label>
-                    <Input
-                      id="managerSalaryPerMonth"
-                      type="number"
-                      value={formData.managerSalaryPerMonth || ""}
-                      onChange={(e) => handleInputChange("managerSalaryPerMonth", e.target.value)}
-                      placeholder="e.g., 75000"
-                      className="h-11"
-                    />
-                  </div>
+      {/* Engineer */}
+      <div className="space-y-2">
+        <img
+          src="https://media.licdn.com/dms/image/v2/C5612AQF3k2PaJyxNoQ/article-cover_image-shrink_720_1280/article-cover_image-shrink_720_1280/0/1520109530566?e=2147483647&v=beta&t=TdrWN_jK2F1lVFxeV3DaYx8fR6RogpT3EeLMYIbGfo4"
+          alt="Engineer"
+          className="w-full h-45 object-contain rounded-md"
+        />
+        <Label htmlFor="engineerSalaryPerMonth" className="text-sm font-medium">
+          Engineer Salary / Month (₹)
+        </Label>
+        <Input
+          id="engineerSalaryPerMonth"
+          type="number"
+          value={formData.engineerSalaryPerMonth || ""}
+          onChange={(e) => handleInputChange("engineerSalaryPerMonth", e.target.value)}
+          placeholder="e.g., 50000"
+          className="h-11"
+        />
+      </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="adminStaffSalaryPerMonth" className="text-sm font-medium">
-                      Admin Staff Salary / Month (₹)
-                    </Label>
-                    <Input
-                      id="adminStaffSalaryPerMonth"
-                      type="number"
-                      value={formData.adminStaffSalaryPerMonth || ""}
-                      onChange={(e) => handleInputChange("adminStaffSalaryPerMonth", e.target.value)}
-                      placeholder="e.g., 30000"
-                      className="h-11"
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+      {/* Manager */}
+      <div className="space-y-2">
+        <img
+          src="https://img.freepik.com/premium-photo/manager-workers-near-cnc-machines_394555-1482.jpg"
+          alt="Manager"
+          className="w-full h-45 object-contain rounded-md"
+        />
+        <Label htmlFor="managerSalaryPerMonth" className="text-sm font-medium">
+          Manager Salary / Month (₹)
+        </Label>
+        <Input
+          id="managerSalaryPerMonth"
+          type="number"
+          value={formData.managerSalaryPerMonth || ""}
+          onChange={(e) => handleInputChange("managerSalaryPerMonth", e.target.value)}
+          placeholder="e.g., 75000"
+          className="h-11"
+        />
+      </div>
+
+      {/* Admin Staff */}
+      <div className="space-y-2">
+        <img
+          src="https://careertechnical.edu/wp-content/uploads/2018/11/10-Things-to-know-about-Office-Administration.jpg"
+          alt="Admin Staff"
+          className="w-full h-45 object-contain rounded-md"
+        />
+        <Label htmlFor="adminStaffSalaryPerMonth" className="text-sm font-medium">
+          Admin Staff Salary / Month (₹)
+        </Label>
+        <Input
+          id="adminStaffSalaryPerMonth"
+          type="number"
+          value={formData.adminStaffSalaryPerMonth || ""}
+          onChange={(e) => handleInputChange("adminStaffSalaryPerMonth", e.target.value)}
+          placeholder="e.g., 30000"
+          className="h-11"
+        />
+      </div>
+
+    </div>
+  </CardContent>
+</Card>
+
 
             {/* Resource Allocation */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Resource Allocation</CardTitle>
-                <CardDescription>
-                  Specify how many machines each role handles to calculate per-machine overhead costs
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="noOfMachinesHandledByOperator" className="text-sm font-medium">
-                      No of Machines Handled by Operator
-                    </Label>
-                    <Input
-                      id="noOfMachinesHandledByOperator"
-                      type="number"
-                      min="1"
-                      value={formData.noOfMachinesHandledByOperator || ""}
-                      onChange={(e) => handleInputChange("noOfMachinesHandledByOperator", e.target.value)}
-                      placeholder="e.g., 1"
-                      className={`h-11 ${errors.noOfMachinesHandledByOperator ? "border-red-500" : ""}`}
-                    />
-                    {errors.noOfMachinesHandledByOperator && (
-                      <p className="text-sm text-red-600">{errors.noOfMachinesHandledByOperator}</p>
-                    )}
-                  </div>
+<Card>
+  <CardHeader>
+    <CardTitle>Resource Allocation</CardTitle>
+    <CardDescription>
+      Specify how many machines each role handles to calculate per-machine overhead costs
+    </CardDescription>
+  </CardHeader>
+  <CardContent className="space-y-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                  <div className="space-y-2">
-                    <Label htmlFor="noOfMachinesHandledByHelper" className="text-sm font-medium">
-                      No of Machines Handled by Helper
-                    </Label>
-                    <Input
-                      id="noOfMachinesHandledByHelper"
-                      type="number"
-                      min="1"
-                      value={formData.noOfMachinesHandledByHelper || ""}
-                      onChange={(e) => handleInputChange("noOfMachinesHandledByHelper", e.target.value)}
-                      placeholder="e.g., 2"
-                      className={`h-11 ${errors.noOfMachinesHandledByHelper ? "border-red-500" : ""}`}
-                    />
-                    {errors.noOfMachinesHandledByHelper && (
-                      <p className="text-sm text-red-600">{errors.noOfMachinesHandledByHelper}</p>
-                    )}
-                  </div>
+      {/* Operator */}
+      <div className="space-y-2">
+        <img
+          src="https://i.ytimg.com/vi/8HFizFNorcE/hq720.jpg?sqp=-oaymwE7CK4FEIIDSFryq4qpAy0IARUAAAAAGAElAADIQj0AgKJD8AEB-AHUBoAC4AOKAgwIABABGGUgXChQMA8=&rs=AOn4CLCtW8YtzVTZ5FJr_KdHho9jDQPvaQ"
+          alt="Operator"
+          className="w-full h-45 object-contain rounded-md"
+        />
+        <Label htmlFor="noOfMachinesHandledByOperator" className="text-sm font-medium">
+          No of Machines Handled by Operator
+        </Label>
+        <Input
+          id="noOfMachinesHandledByOperator"
+          type="number"
+          min="1"
+          value={formData.noOfMachinesHandledByOperator || ""}
+          onChange={(e) => handleInputChange("noOfMachinesHandledByOperator", e.target.value)}
+          placeholder="e.g., 1"
+          className={`h-11 ${errors.noOfMachinesHandledByOperator ? "border-red-500" : ""}`}
+        />
+        {errors.noOfMachinesHandledByOperator && (
+          <p className="text-sm text-red-600">{errors.noOfMachinesHandledByOperator}</p>
+        )}
+      </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="noOfMachinesHandledByQualityInspector" className="text-sm font-medium">
-                      No of Machines Handled by Quality Inspector
-                    </Label>
-                    <Input
-                      id="noOfMachinesHandledByQualityInspector"
-                      type="number"
-                      min="1"
-                      value={formData.noOfMachinesHandledByQualityInspector || ""}
-                      onChange={(e) => handleInputChange("noOfMachinesHandledByQualityInspector", e.target.value)}
-                      placeholder="e.g., 3"
-                      className={`h-11 ${errors.noOfMachinesHandledByQualityInspector ? "border-red-500" : ""}`}
-                    />
-                    {errors.noOfMachinesHandledByQualityInspector && (
-                      <p className="text-sm text-red-600">{errors.noOfMachinesHandledByQualityInspector}</p>
-                    )}
-                  </div>
+      {/* Helper */}
+      <div className="space-y-2">
+        <img
+          src="https://careers.prattindustries.com/media/xywl2sab/copy-of-dsc_5836.jpg?width=1600&height=900&rnd=133421894419970000&width=1600&height=900&rmode=crop&quality=75"
+          alt="Helper"
+          className="w-full h-45 object-contain rounded-md"
+        />
+        <Label htmlFor="noOfMachinesHandledByHelper" className="text-sm font-medium">
+          No of Machines Handled by Helper
+        </Label>
+        <Input
+          id="noOfMachinesHandledByHelper"
+          type="number"
+          min="1"
+          value={formData.noOfMachinesHandledByHelper || ""}
+          onChange={(e) => handleInputChange("noOfMachinesHandledByHelper", e.target.value)}
+          placeholder="e.g., 2"
+          className={`h-11 ${errors.noOfMachinesHandledByHelper ? "border-red-500" : ""}`}
+        />
+        {errors.noOfMachinesHandledByHelper && (
+          <p className="text-sm text-red-600">{errors.noOfMachinesHandledByHelper}</p>
+        )}
+      </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="noOfMachinesHandledByProductionSupervisor" className="text-sm font-medium">
-                      No of Machines Handled by Production Supervisor
-                    </Label>
-                    <Input
-                      id="noOfMachinesHandledByProductionSupervisor"
-                      type="number"
-                      min="1"
-                      value={formData.noOfMachinesHandledByProductionSupervisor || ""}
-                      onChange={(e) => handleInputChange("noOfMachinesHandledByProductionSupervisor", e.target.value)}
-                      placeholder="e.g., 10"
-                      className={`h-11 ${errors.noOfMachinesHandledByProductionSupervisor ? "border-red-500" : ""}`}
-                    />
-                    {errors.noOfMachinesHandledByProductionSupervisor && (
-                      <p className="text-sm text-red-600">{errors.noOfMachinesHandledByProductionSupervisor}</p>
-                    )}
-                  </div>
+      {/* Quality Inspector */}
+      <div className="space-y-2">
+        <img
+          src="https://www.compliancequest.com/wp-content/uploads/2023/11/automated-quality-control-inspection-768x442.webp"
+          alt="Quality Inspector"
+          className="w-full h-45 object-contain rounded-md"
+        />
+        <Label htmlFor="noOfMachinesHandledByQualityInspector" className="text-sm font-medium">
+          No of Machines Handled by Quality Inspector
+        </Label>
+        <Input
+          id="noOfMachinesHandledByQualityInspector"
+          type="number"
+          min="1"
+          value={formData.noOfMachinesHandledByQualityInspector || ""}
+          onChange={(e) => handleInputChange("noOfMachinesHandledByQualityInspector", e.target.value)}
+          placeholder="e.g., 3"
+          className={`h-11 ${errors.noOfMachinesHandledByQualityInspector ? "border-red-500" : ""}`}
+        />
+        {errors.noOfMachinesHandledByQualityInspector && (
+          <p className="text-sm text-red-600">{errors.noOfMachinesHandledByQualityInspector}</p>
+        )}
+      </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="noOfMachinesHandledByQualitySupervisor" className="text-sm font-medium">
-                      No of Machines Handled by Quality Supervisor
-                    </Label>
-                    <Input
-                      id="noOfMachinesHandledByQualitySupervisor"
-                      type="number"
-                      min="1"
-                      value={formData.noOfMachinesHandledByQualitySupervisor || ""}
-                      onChange={(e) => handleInputChange("noOfMachinesHandledByQualitySupervisor", e.target.value)}
-                      placeholder="e.g., 15"
-                      className={`h-11 ${errors.noOfMachinesHandledByQualitySupervisor ? "border-red-500" : ""}`}
-                    />
-                    {errors.noOfMachinesHandledByQualitySupervisor && (
-                      <p className="text-sm text-red-600">{errors.noOfMachinesHandledByQualitySupervisor}</p>
-                    )}
-                  </div>
+      {/* Production Supervisor */}
+      <div className="space-y-2">
+        <img
+          src="https://media.istockphoto.com/id/1462139281/photo/two-professional-heavy-industry-engineers-wearing-hard-hats-at-factory-walking-and-discussing.jpg?s=612x612&w=0&k=20&c=FnrNr4HGDxxknumX1o5LYsgaLpH4GjmaNipQ0g7OzRY="
+          alt="Production Supervisor"
+          className="w-full h-45 object-contain rounded-md"
+        />
+        <Label htmlFor="noOfMachinesHandledByProductionSupervisor" className="text-sm font-medium">
+          No of Machines Handled by Production Supervisor
+        </Label>
+        <Input
+          id="noOfMachinesHandledByProductionSupervisor"
+          type="number"
+          min="1"
+          value={formData.noOfMachinesHandledByProductionSupervisor || ""}
+          onChange={(e) => handleInputChange("noOfMachinesHandledByProductionSupervisor", e.target.value)}
+          placeholder="e.g., 10"
+          className={`h-11 ${errors.noOfMachinesHandledByProductionSupervisor ? "border-red-500" : ""}`}
+        />
+        {errors.noOfMachinesHandledByProductionSupervisor && (
+          <p className="text-sm text-red-600">{errors.noOfMachinesHandledByProductionSupervisor}</p>
+        )}
+      </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="noOfMachinesHandledByEngineer" className="text-sm font-medium">
-                      No of Machines Handled by Engineer
-                    </Label>
-                    <Input
-                      id="noOfMachinesHandledByEngineer"
-                      type="number"
-                      min="1"
-                      value={formData.noOfMachinesHandledByEngineer || ""}
-                      onChange={(e) => handleInputChange("noOfMachinesHandledByEngineer", e.target.value)}
-                      placeholder="e.g., 20"
-                      className={`h-11 ${errors.noOfMachinesHandledByEngineer ? "border-red-500" : ""}`}
-                    />
-                    {errors.noOfMachinesHandledByEngineer && (
-                      <p className="text-sm text-red-600">{errors.noOfMachinesHandledByEngineer}</p>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+      {/* Quality Supervisor */}
+      <div className="space-y-2">
+        <img
+          src="https://cashflowinventory.com/blog/wp-content/uploads/2023/03/Quality-Control-and-Inspection-Processes-in-Inventory-Management-1024x683.jpg"
+          alt="Quality Supervisor"
+          className="w-full h-45 object-contain rounded-md"
+        />
+        <Label htmlFor="noOfMachinesHandledByQualitySupervisor" className="text-sm font-medium">
+          No of Machines Handled by Quality Supervisor
+        </Label>
+        <Input
+          id="noOfMachinesHandledByQualitySupervisor"
+          type="number"
+          min="1"
+          value={formData.noOfMachinesHandledByQualitySupervisor || ""}
+          onChange={(e) => handleInputChange("noOfMachinesHandledByQualitySupervisor", e.target.value)}
+          placeholder="e.g., 15"
+          className={`h-11 ${errors.noOfMachinesHandledByQualitySupervisor ? "border-red-500" : ""}`}
+        />
+        {errors.noOfMachinesHandledByQualitySupervisor && (
+          <p className="text-sm text-red-600">{errors.noOfMachinesHandledByQualitySupervisor}</p>
+        )}
+      </div>
+
+      {/* Engineer */}
+      <div className="space-y-2">
+        <img
+          src="https://cgu-odisha.ac.in/wp-content/uploads/2023/05/1_xqAM05_tfNP7VCcE0VAYzw-2048x1408-1-1024x704.jpeg"
+          alt="Engineer"
+          className="w-full h-45 object-contain rounded-md"
+        />
+        <Label htmlFor="noOfMachinesHandledByEngineer" className="text-sm font-medium">
+          No of Machines Handled by Engineer
+        </Label>
+        <Input
+          id="noOfMachinesHandledByEngineer"
+          type="number"
+          min="1"
+          value={formData.noOfMachinesHandledByEngineer || ""}
+          onChange={(e) => handleInputChange("noOfMachinesHandledByEngineer", e.target.value)}
+          placeholder="e.g., 20"
+          className={`h-11 ${errors.noOfMachinesHandledByEngineer ? "border-red-500" : ""}`}
+        />
+        {errors.noOfMachinesHandledByEngineer && (
+          <p className="text-sm text-red-600">{errors.noOfMachinesHandledByEngineer}</p>
+        )}
+      </div>
+
+    </div>
+  </CardContent>
+</Card>
+
 
             {/* Overhead Summary */}
-            {totalOverheadSalaries > 0 && (
-              <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-green-200">
-                <CardHeader>
-                  <CardTitle className="text-green-800">Overhead Cost Summary</CardTitle>
-                  <CardDescription className="text-green-700">
-                    Monthly overhead costs and resource allocation summary
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="p-4 bg-white rounded-lg border border-green-200">
-                      <div className="text-sm font-medium text-green-800 mb-1">Total Overhead Salaries</div>
-                      <div className="text-3xl font-bold text-green-900">₹{totalOverheadSalaries.toLocaleString()}</div>
-                      <div className="text-xs text-green-600 mt-1">Per month</div>
-                    </div>
+{totalOverheadSalaries > 0 && (
+  <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-green-200">
+    <CardHeader>
+      <CardTitle className="text-green-800">Overhead Cost Summary</CardTitle>
+      <CardDescription className="text-green-700">
+        Monthly overhead costs and resource allocation summary
+      </CardDescription>
+    </CardHeader>
+    <CardContent>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Total Overhead Salaries */}
+        <div className="p-4 bg-white rounded-lg border border-green-200 space-y-2">
+          <img
+            src="https://cdn-icons-png.flaticon.com/512/2921/2921222.png" // salary icon
+            alt="Salaries Icon"
+            className="w-full h-28 object-contain"
+          />
+          <div className="text-sm font-medium text-green-800">Total Overhead Salaries</div>
+          <div className="text-3xl font-bold text-green-900">
+            ₹{totalOverheadSalaries.toLocaleString()}
+          </div>
+          <div className="text-xs text-green-600">Per month</div>
+        </div>
 
-                    <div className="p-4 bg-white rounded-lg border border-blue-200">
-                      <div className="text-sm font-medium text-blue-800 mb-1">Resource Efficiency</div>
-                      <div className="text-lg font-bold text-blue-900">
-                        Avg:{" "}
-                        {Math.round(
-                          (formData.noOfMachinesHandledByOperator +
-                            formData.noOfMachinesHandledByHelper +
-                            formData.noOfMachinesHandledByQualityInspector +
-                            formData.noOfMachinesHandledByProductionSupervisor +
-                            formData.noOfMachinesHandledByQualitySupervisor +
-                            formData.noOfMachinesHandledByEngineer) /
-                            6,
-                        )}{" "}
-                        machines/person
-                      </div>
-                      <div className="text-xs text-blue-600 mt-1">Average machines per role</div>
-                    </div>
-                  </div>
+        {/* Resource Efficiency */}
+        <div className="p-4 bg-white rounded-lg border border-blue-200 space-y-2">
+          <img
+            src="https://cdn-icons-png.flaticon.com/512/18500/18500390.png" // efficiency icon
+            alt="Efficiency Icon"
+            className="w-full h-28 object-contain"
+          />
+          <div className="text-sm font-medium text-blue-800">Resource Efficiency</div>
+          <div className="text-lg font-bold text-blue-900">
+            Avg:{" "}
+            {Math.round(
+              (formData.noOfMachinesHandledByOperator +
+                formData.noOfMachinesHandledByHelper +
+                formData.noOfMachinesHandledByQualityInspector +
+                formData.noOfMachinesHandledByProductionSupervisor +
+                formData.noOfMachinesHandledByQualitySupervisor +
+                formData.noOfMachinesHandledByEngineer) /
+                6,
+            )}{" "}
+            machines/person
+          </div>
+          <div className="text-xs text-blue-600">Average machines per role</div>
+        </div>
+      </div>
 
-                  {/* Detailed Breakdown */}
-                  <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-                    <h4 className="font-medium text-gray-900 mb-3">Salary Breakdown</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                      <div className="flex justify-between">
-                        <span>Production Supervisor:</span>
-                        <span>₹{formData.productionSupervisorSalaryPerMonth.toLocaleString()}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Quality Supervisor:</span>
-                        <span>₹{formData.qualitySupervisorSalaryPerMonth.toLocaleString()}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Engineer:</span>
-                        <span>₹{formData.engineerSalaryPerMonth.toLocaleString()}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Manager:</span>
-                        <span>₹{formData.managerSalaryPerMonth.toLocaleString()}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Admin Staff:</span>
-                        <span>₹{formData.adminStaffSalaryPerMonth.toLocaleString()}</span>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+      {/* Salary Breakdown */}
+      <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+        <h4 className="font-medium text-gray-900 mb-3">Salary Breakdown</h4>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-800">
+          <div className="flex justify-between border-b border-gray-200 pb-1">
+            <span>Production Supervisor:</span>
+            <span>₹{formData.productionSupervisorSalaryPerMonth.toLocaleString()}</span>
+          </div>
+          <div className="flex justify-between border-b border-gray-200 pb-1">
+            <span>Quality Supervisor:</span>
+            <span>₹{formData.qualitySupervisorSalaryPerMonth.toLocaleString()}</span>
+          </div>
+          <div className="flex justify-between border-b border-gray-200 pb-1">
+            <span>Engineer:</span>
+            <span>₹{formData.engineerSalaryPerMonth.toLocaleString()}</span>
+          </div>
+          <div className="flex justify-between border-b border-gray-200 pb-1">
+            <span>Manager:</span>
+            <span>₹{formData.managerSalaryPerMonth.toLocaleString()}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Admin Staff:</span>
+            <span>₹{formData.adminStaffSalaryPerMonth.toLocaleString()}</span>
+          </div>
+        </div>
+      </div>
+    </CardContent>
+  </Card>
+)}
+
 
             {/* Navigation */}
             <div className="flex flex-col sm:flex-row justify-between gap-4 pt-6">

@@ -148,168 +148,245 @@ export default function ConsumablesPage() {
 
           <div className="space-y-6">
             {/* Coolant & Waste */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Coolant & Waste</CardTitle>
-                <CardDescription>Enter details about coolant oil and waste usage</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="coolantOilTopUpPerMonth" className="text-sm font-medium">
-                      Coolant Oil Top-up Per Month (litres)
-                    </Label>
-                    <Input
-                      id="coolantOilTopUpPerMonth"
-                      type="number"
-                      step="0.01"
-                      value={formData.coolantOilTopUpPerMonth || ""}
-                      onChange={(e) => handleInputChange("coolantOilTopUpPerMonth", e.target.value)}
-                      placeholder="e.g., 5"
-                      className="h-11"
-                    />
-                  </div>
+<Card>
+  <CardHeader>
+    <CardTitle>Coolant & Waste</CardTitle>
+    <CardDescription>Enter details about coolant oil and waste usage</CardDescription>
+  </CardHeader>
+  <CardContent className="space-y-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                  <div className="space-y-2">
-                    <Label htmlFor="coolantOilCostPerLitre" className="text-sm font-medium">
-                      Coolant Oil Cost Per Litre (₹)
-                    </Label>
-                    <Input
-                      id="coolantOilCostPerLitre"
-                      type="number"
-                      step="0.01"
-                      value={formData.coolantOilCostPerLitre || ""}
-                      onChange={(e) => handleInputChange("coolantOilCostPerLitre", e.target.value)}
-                      placeholder="e.g., 250"
-                      className="h-11"
-                    />
-                  </div>
+      {/* Coolant Oil Top-up */}
+      <div className="space-y-2">
+        <img
+          src="https://www.shutterstock.com/shutterstock/videos/3678613201/thumb/1.jpg?ip=x480"
+          alt="Coolant Oil"
+          className="w-full h-40 5object-contain rounded-md"
+        />
+        <Label htmlFor="coolantOilTopUpPerMonth" className="text-sm font-medium">
+          Coolant Oil Top-up Per Month (litres)
+        </Label>
+        <Input
+          id="coolantOilTopUpPerMonth"
+          type="number"
+          step="0.01"
+          value={formData.coolantOilTopUpPerMonth || ""}
+          onChange={(e) => handleInputChange("coolantOilTopUpPerMonth", e.target.value)}
+          placeholder="e.g., 5"
+          className="h-11"
+        />
+      </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="wasteUsagePerMonth" className="text-sm font-medium">
-                      Waste Usage Per Month (kg)
-                    </Label>
-                    <Input
-                      id="wasteUsagePerMonth"
-                      type="number"
-                      step="0.01"
-                      value={formData.wasteUsagePerMonth || ""}
-                      onChange={(e) => handleInputChange("wasteUsagePerMonth", e.target.value)}
-                      placeholder="e.g., 2"
-                      className="h-11"
-                    />
-                  </div>
+      {/* Coolant Oil Cost */}
+      <div className="space-y-2">
+        <img
+          src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTBmJz4oZO2jzob9D__mtm8wrjfPzJWDFY_UAHaXyGGOir2NMoR2UkAEYy5FbAFcI56RII&usqp=CAU"
+          alt="Coolant Oil Cost"
+          className="w-full h-40 object-contain rounded-md"
+        />
+        <Label htmlFor="coolantOilCostPerLitre" className="text-sm font-medium">
+          Coolant Oil Cost Per Litre (₹)
+        </Label>
+        <Input
+          id="coolantOilCostPerLitre"
+          type="number"
+          step="0.01"
+          value={formData.coolantOilCostPerLitre || ""}
+          onChange={(e) => handleInputChange("coolantOilCostPerLitre", e.target.value)}
+          placeholder="e.g., 250"
+          className="h-11"
+        />
+      </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="costOfWastePerKg" className="text-sm font-medium">
-                      Cost of Waste Per Kg (₹)
-                    </Label>
-                    <Input
-                      id="costOfWastePerKg"
-                      type="number"
-                      step="0.01"
-                      value={formData.costOfWastePerKg || ""}
-                      onChange={(e) => handleInputChange("costOfWastePerKg", e.target.value)}
-                      placeholder="e.g., 50"
-                      className="h-11"
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+      {/* Waste Usage */}
+      <div className="space-y-2">
+        <img
+          src="https://t3.ftcdn.net/jpg/10/04/22/34/360_F_1004223473_DPNanYErcQOwxy8IPZgU9yfcUcSjEAdA.jpg"
+          alt="Waste Usage"
+          className="w-full h-45 object-contain rounded-md"
+        />
+        <Label htmlFor="wasteUsagePerMonth" className="text-sm font-medium">
+          Waste Usage Per Month (kg)
+        </Label>
+        <Input
+          id="wasteUsagePerMonth"
+          type="number"
+          step="0.01"
+          value={formData.wasteUsagePerMonth || ""}
+          onChange={(e) => handleInputChange("wasteUsagePerMonth", e.target.value)}
+          placeholder="e.g., 2"
+          className="h-11"
+        />
+      </div>
+
+      {/* Waste Cost */}
+      <div className="space-y-2">
+        <img
+          src="https://revnew.com/hubfs/cost-revenue-ratio.jpg"
+          alt="Waste Cost"
+          className="w-full h-45 object-contain rounded-md"
+        />
+        <Label htmlFor="costOfWastePerKg" className="text-sm font-medium">
+          Cost of Waste Per Kg (₹)
+        </Label>
+        <Input
+          id="costOfWastePerKg"
+          type="number"
+          step="0.01"
+          value={formData.costOfWastePerKg || ""}
+          onChange={(e) => handleInputChange("costOfWastePerKg", e.target.value)}
+          placeholder="e.g., 50"
+          className="h-11"
+        />
+      </div>
+
+    </div>
+  </CardContent>
+</Card>
+
 
             {/* Maintenance Costs */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Maintenance Costs</CardTitle>
-                <CardDescription>Enter details about maintenance costs</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="monthlyMaintenanceCost" className="text-sm font-medium">
-                      Monthly Maintenance Cost (₹)
-                    </Label>
-                    <Input
-                      id="monthlyMaintenanceCost"
-                      type="number"
-                      step="0.01"
-                      value={formData.monthlyMaintenanceCost || ""}
-                      onChange={(e) => handleInputChange("monthlyMaintenanceCost", e.target.value)}
-                      placeholder="e.g., 2000"
-                      className="h-11"
-                    />
-                  </div>
+<Card>
+  <CardHeader>
+    <CardTitle>Maintenance Costs</CardTitle>
+    <CardDescription>Enter details about maintenance costs</CardDescription>
+  </CardHeader>
+  <CardContent className="space-y-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                  <div className="space-y-2">
-                    <Label htmlFor="annualMaintenanceCost" className="text-sm font-medium">
-                      Annual Maintenance Cost (₹)
-                    </Label>
-                    <Input
-                      id="annualMaintenanceCost"
-                      type="number"
-                      step="0.01"
-                      value={formData.annualMaintenanceCost || ""}
-                      onChange={(e) => handleInputChange("annualMaintenanceCost", e.target.value)}
-                      placeholder="e.g., 24000"
-                      className="h-11"
-                    />
-                  </div>
+      {/* Monthly Maintenance Cost */}
+      <div className="space-y-2">
+        <img
+          src="https://assets-news.housing.com/news/wp-content/uploads/2017/06/25095820/Maintenance-charges-that-buyers-need-to-be-aware-of-FB-1200x700-compressed.jpg"
+          alt="Monthly Maintenance"
+          className="w-full h-45 object-contain rounded-md"
+        />
+        <Label htmlFor="monthlyMaintenanceCost" className="text-sm font-medium">
+          Monthly Maintenance Cost (₹)
+        </Label>
+        <Input
+          id="monthlyMaintenanceCost"
+          type="number"
+          step="0.01"
+          value={formData.monthlyMaintenanceCost || ""}
+          onChange={(e) => handleInputChange("monthlyMaintenanceCost", e.target.value)}
+          placeholder="e.g., 2000"
+          className="h-11"
+        />
+      </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="otherConsumablesPerMonth" className="text-sm font-medium">
-                      Other Consumables Per Month (₹)
-                    </Label>
-                    <Input
-                      id="otherConsumablesPerMonth"
-                      type="number"
-                      step="0.01"
-                      value={formData.otherConsumablesPerMonth || ""}
-                      onChange={(e) => handleInputChange("otherConsumablesPerMonth", e.target.value)}
-                      placeholder="e.g., 1000"
-                      className="h-11"
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+      {/* Annual Maintenance Cost */}
+      <div className="space-y-2">
+        <img
+          src="https://antmyerp.com/wp-content/uploads/2021/12/AMC-Management-Software.webp"
+          alt="Annual Maintenance"
+          className="w-full h-45 object-contain rounded-md"
+        />
+        <Label htmlFor="annualMaintenanceCost" className="text-sm font-medium">
+          Annual Maintenance Cost (₹)
+        </Label>
+        <Input
+          id="annualMaintenanceCost"
+          type="number"
+          step="0.01"
+          value={formData.annualMaintenanceCost || ""}
+          onChange={(e) => handleInputChange("annualMaintenanceCost", e.target.value)}
+          placeholder="e.g., 24000"
+          className="h-11"
+        />
+      </div>
+
+      {/* Other Consumables Per Month */}
+      <div className="space-y-2">
+        <img
+          src="https://www.avsengineering.sg/wp-content/uploads/2024/11/Consumables.jpg"
+          alt="Other Consumables"
+          className="w-full h-45 object-contain rounded-md"
+        />
+        <Label htmlFor="otherConsumablesPerMonth" className="text-sm font-medium">
+          Other Consumables Per Month (₹)
+        </Label>
+        <Input
+          id="otherConsumablesPerMonth"
+          type="number"
+          step="0.01"
+          value={formData.otherConsumablesPerMonth || ""}
+          onChange={(e) => handleInputChange("otherConsumablesPerMonth", e.target.value)}
+          placeholder="e.g., 1000"
+          className="h-11"
+        />
+      </div>
+
+    </div>
+  </CardContent>
+</Card>
+
 
             {/* Cost Summary */}
-            <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-green-200">
-              <CardHeader>
-                <CardTitle className="text-green-800">Cost Summary</CardTitle>
-                <CardDescription className="text-green-700">Monthly consumables and maintenance costs</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="p-4 bg-white rounded-lg border border-green-200">
-                    <div className="text-sm font-medium text-green-800 mb-1">Coolant Cost</div>
-                    <div className="text-xl font-bold text-green-900">₹{coolantCost.toFixed(2)}</div>
-                    <div className="text-xs text-green-600 mt-1">Per month</div>
-                  </div>
+<Card className="bg-gradient-to-r from-green-50 to-blue-50 border-green-200">
+  <CardHeader>
+    <CardTitle className="text-green-800">Cost Summary</CardTitle>
+    <CardDescription className="text-green-700">
+      Monthly consumables and maintenance costs
+    </CardDescription>
+  </CardHeader>
+  <CardContent>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                  <div className="p-4 bg-white rounded-lg border border-green-200">
-                    <div className="text-sm font-medium text-green-800 mb-1">Waste Cost</div>
-                    <div className="text-xl font-bold text-green-900">₹{wasteCost.toFixed(2)}</div>
-                    <div className="text-xs text-green-600 mt-1">Per month</div>
-                  </div>
+      {/* Coolant Cost */}
+      <div className="p-4 bg-white rounded-lg border border-green-200 space-y-2">
+        <img
+          src="https://cdn-icons-png.flaticon.com/512/7751/7751861.png"
+          alt="Coolant Icon"
+          className="w-full h-32 object-contain"
+        />
+        <div className="text-sm font-medium text-green-800">Coolant Cost</div>
+        <div className="text-xl font-bold text-green-900">₹{coolantCost.toFixed(2)}</div>
+        <div className="text-xs text-green-600">Per month</div>
+      </div>
 
-                  <div className="p-4 bg-white rounded-lg border border-blue-200">
-                    <div className="text-sm font-medium text-blue-800 mb-1">Maintenance Cost</div>
-                    <div className="text-xl font-bold text-blue-900">
-                      ₹{(formData.monthlyMaintenanceCost + annualMaintenanceCostPerMonth).toFixed(2)}
-                    </div>
-                    <div className="text-xs text-blue-600 mt-1">Per month</div>
-                  </div>
+      {/* Waste Cost */}
+      <div className="p-4 bg-white rounded-lg border border-green-200 space-y-2">
+        <img
+          src="https://cdn-icons-png.flaticon.com/512/9028/9028526.png"
+          alt="Waste Icon"
+          className="w-full h-32 object-contain"
+        />
+        <div className="text-sm font-medium text-green-800">Waste Cost</div>
+        <div className="text-xl font-bold text-green-900">₹{wasteCost.toFixed(2)}</div>
+        <div className="text-xs text-green-600">Per month</div>
+      </div>
 
-                  <div className="p-4 bg-white rounded-lg border border-blue-200">
-                    <div className="text-sm font-medium text-blue-800 mb-1">Total Cost</div>
-                    <div className="text-xl font-bold text-blue-900">₹{totalMonthlyCost.toFixed(2)}</div>
-                    <div className="text-xs text-blue-600 mt-1">Per month</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+      {/* Maintenance Cost */}
+      <div className="p-4 bg-white rounded-lg border border-blue-200 space-y-2">
+        <img
+          src="https://www.scnsoft.com/blog-pictures/crm-pics/customer-service-costs.png"
+          alt="Maintenance Icon"
+          className="w-full h-32 object-contain"
+        />
+        <div className="text-sm font-medium text-blue-800">Maintenance Cost</div>
+        <div className="text-xl font-bold text-blue-900">
+          ₹{(formData.monthlyMaintenanceCost + annualMaintenanceCostPerMonth).toFixed(2)}
+        </div>
+        <div className="text-xs text-blue-600">Per month</div>
+      </div>
+
+      {/* Total Cost */}
+      <div className="p-4 bg-white rounded-lg border border-blue-200 space-y-2">
+        <img
+          src="https://cdn-icons-png.flaticon.com/512/3191/3191648.png"
+          alt="Total Icon"
+          className="w-full h-32 object-contain"
+        />
+        <div className="text-sm font-medium text-blue-800">Total Cost</div>
+        <div className="text-xl font-bold text-blue-900">₹{totalMonthlyCost.toFixed(2)}</div>
+        <div className="text-xs text-blue-600">Per month</div>
+      </div>
+
+    </div>
+  </CardContent>
+</Card>
+
 
             {/* Navigation */}
             <div className="flex flex-col sm:flex-row justify-between gap-4 pt-6">
