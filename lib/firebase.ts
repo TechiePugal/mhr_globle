@@ -3,15 +3,15 @@ import { getFirestore } from "firebase/firestore"
 import { getAnalytics } from "firebase/analytics"
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDSHZAKsRFrHer7lno6Rknr3w5j-xVglVc",
-  authDomain: "employeemanagement-16dba.firebaseapp.com",
-  databaseURL: "https://employeemanagement-16dba-default-rtdb.firebaseio.com",
-  projectId: "employeemanagement-16dba",
-  storageBucket: "employeemanagement-16dba.firebasestorage.app",
-  messagingSenderId: "723276151197",
-  appId: "1:723276151197:web:5df89d54869fc42dd4d774",
-  measurementId: "G-BT1YLST16T",
-}
+  apiKey: "AIzaSyDGvtDcFhE9gSQUeKTq8MwaqSuxFHjC13U",
+  authDomain: "pugalfolio.firebaseapp.com",
+  databaseURL: "https://pugalfolio-default-rtdb.firebaseio.com",
+  projectId: "pugalfolio",
+  storageBucket: "pugalfolio.firebasestorage.app",
+  messagingSenderId: "17589199201",
+  appId: "1:17589199201:web:3b2e7f0fd940d812446520",
+  measurementId: "G-THXRGHNLYF"
+};
 
 // Initialize Firebase only if it hasn't been initialized
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp()
