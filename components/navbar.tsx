@@ -19,6 +19,7 @@ import {
   List,
   ChevronRight,
   User,
+  AreaChart,
 } from "lucide-react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
@@ -26,9 +27,9 @@ import { getCurrentUser, clearCurrentUser } from "@/lib/firebaseService"
 import Image from "next/image"
 import Logo from "./mhrlogo.png"
 const navigationItems = [
-  { id: "dashboard", label: "Dashboard", icon: Home, href: "/dashboard" },
+  { id: "home", label: "Home", icon: Home, href: "/home" },
+    { id: "dashboard", label: "Dashboard", icon: AreaChart, href: "/dashboard" },
   { id: "machines", label: "All Machines", icon: List, href: "/machines" },
-  
   { id: "reports", label: "Reports", icon: FileText, href: "/reports" },
   { id: "investment", label: "Investment", icon: Calculator, href: "/investment", step: 1 },
   { id: "space-expenses", label: "Space Expenses", icon: Building, href: "/space-expenses", step: 2 },
@@ -213,7 +214,7 @@ function DesktopNavigation({ navigationItems, pathname, currentUser, machineName
         <div>
           <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Main</h3>
           <div className="space-y-1">
-            {navigationItems.slice(0, 3).map((item: any) => {
+            {navigationItems.slice(0, 4).map((item: any) => {
               const Icon = item.icon
               const isActive = pathname === item.href
               return (
@@ -238,7 +239,7 @@ function DesktopNavigation({ navigationItems, pathname, currentUser, machineName
         <div>
           <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Calculation Steps</h3>
           <div className="space-y-1">
-            {navigationItems.slice(3).map((item: any) => {
+            {navigationItems.slice(4).map((item: any) => {
               const Icon = item.icon
               const isActive = pathname === item.href
               return (
