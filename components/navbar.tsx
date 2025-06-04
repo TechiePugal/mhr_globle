@@ -27,8 +27,9 @@ import { getCurrentUser, clearCurrentUser } from "@/lib/firebaseService"
 import Image from "next/image"
 import Logo from "./mhrlogo.png"
 const navigationItems = [
-  { id: "home", label: "Home", icon: Home, href: "/home" },
-    { id: "dashboard", label: "Dashboard", icon: AreaChart, href: "/dashboard" },
+  
+    { id: "dashboard", label: "Home", icon: Home, href: "/dashboard" },
+    { id: "home", label: "Dashboard", icon: AreaChart, href: "/home" },
   { id: "machines", label: "All Machines", icon: List, href: "/machines" },
   { id: "reports", label: "Reports", icon: FileText, href: "/reports" },
   { id: "investment", label: "Investment", icon: Calculator, href: "/investment", step: 1 },
