@@ -155,7 +155,7 @@ export default function MachineDashboard() {
                   <div className="flex justify-between mt-4 pt-4 border-t">
                     <Button variant="outline" size="sm" onClick={() => handleEdit(machine)}>
                       <Edit className="w-4 h-4 mr-1" />
-                      Edit
+                      View
                     </Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>

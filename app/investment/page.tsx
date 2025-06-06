@@ -13,6 +13,7 @@ import { calculateInvestmentData } from "@/lib/calculations"
 import Navbar from "@/components/navbar"
 import Link from "next/link"
 import Image from "next/image"
+
 export default function InvestmentPage() {
   const router = useRouter()
   const [formData, setFormData] = useState<MachineData["investmentData"]>({
@@ -161,21 +162,84 @@ export default function InvestmentPage() {
     router.push("/space-expenses")
   }
 
+  const renderInputWithBackgroundImage = (
+    id: string,
+    label: string,
+    value: number | string,
+    onChange: (value: string) => void,
+    placeholder: string,
+    imageUrl: string,
+    unit: string,
+    error?: string,
+    required: boolean = false,
+    description?: string,
+    type: string = "number"
+  ) => (
+    <div className="space-y-2">
+      <div
+        className="relative p-6 bg-cover bg-center text-white rounded-lg min-h-[200px] flex flex-col justify-between hover:shadow-lg transition-shadow duration-200"
+        style={{
+          backgroundImage: `url(${imageUrl})`,
+          backgroundBlendMode: "overlay",
+          backgroundColor: "rgba(0, 0, 0, 0.6)",
+        }}
+      >
+        <div className="space-y-4">
+          <Label htmlFor={id} className="text-white font-semibold text-lg">
+            {label} {unit && <span className="text-yellow-300">({unit})</span>} {required && <span className="text-red-300">*</span>}
+          </Label>
+          
+          <Input
+            id={id}
+            type={type}
+            step={type === "number" ? "0.01" : undefined}
+            value={value || ""}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={placeholder}
+            className={`h-12 text-lg font-medium bg-white/90 backdrop-blur-sm border-white/50 text-gray-900 placeholder:text-gray-600 ${
+              error ? "border-red-400" : "border-white/50"
+            } focus:border-white focus:bg-white`}
+          />
+          
+          {description && (
+            <p className="text-white/80 text-sm">{description}</p>
+          )}
+        </div>
+      </div>
+      {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
+    </div>
+  )
+
+  const renderCalculationCard = (title: string, value: number | string, unit: string, imageUrl: string, description?: string) => {
+    return (
+      <div
+        className="relative p-6 bg-cover bg-center text-white rounded-lg min-h-[200px] flex flex-col justify-end"
+        style={{
+          backgroundImage: `url(${imageUrl})`,
+          backgroundBlendMode: "overlay",
+          backgroundColor: "rgba(0, 0, 0, 0.5)",
+        }}
+      >
+        <div className="space-y-2">
+          <div className="text-white font-medium text-lg">{title}</div>
+          <div className="text-3xl font-bold text-white">
+            {typeof value === 'number' ? (title.includes('₹') ? `₹${value.toLocaleString()}` : value.toLocaleString()) : value}
+          </div>
+          <div className="text-white/80 text-sm">{unit}</div>
+          {description && (
+            <div className="text-white/70 text-xs">{description}</div>
+          )}
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar title="Investment Details" currentStep={1} totalSteps={7} />
 
       <main className="md:ml-64 pt-4">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          {/* Breadcrumb */}
-          {/* <div className="flex items-center space-x-2 text-sm text-gray-600 mb-6"> */}
-          {/* <Link href="/dashboard" className="hover:text-blue-600">
-              Dashboard
-            </Link> */}
-          {/* <span className="text-gray-900 font-medium">Investment Details</span> */}
-          {/* </div> */}
-
-
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-center space-x-3 mb-4">
@@ -187,15 +251,18 @@ export default function InvestmentPage() {
                 <p className="text-gray-600">Enter the basic investment information for your machine</p>
               </div>
             </div>
-            <div>
+
+            <div className="mb-6">
               <Image
                 src="https://cdn.corporatefinanceinstitute.com/assets/income-investing-1024x576.jpeg"
-                alt="Remote Image"
-                width={900} // original width for aspect ratio
-                height={300} // original height for aspect ratio
+                alt="Investment Details"
+                width={900}
+                height={300}
                 style={{ maxWidth: '900px', maxHeight: '200px', width: '100%', height: 'auto' }}
+                className="rounded-lg shadow-md"
               />
             </div>
+
             <Alert className="bg-blue-50 border-blue-200">
               <Info className="w-4 h-4 text-blue-600" />
               <AlertDescription className="text-blue-800">
@@ -204,107 +271,80 @@ export default function InvestmentPage() {
             </Alert>
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-8">
             {/* Basic Information */}
-<Card>
-  <CardHeader>
-    <CardTitle>Basic Information</CardTitle>
-    <CardDescription>Enter the fundamental details about your machine</CardDescription>
-  </CardHeader>
-  <CardContent className="space-y-6">
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      {/* Image section */}
-      <div className="flex items-center justify-center md:col-span-1">
-<img
-  src="https://thumbs.dreamstime.com/b/close-up-milling-machine-lots-gold-flakes-ai-332839930.jpg" // <-- Replace with your actual image path
-  alt="Machine Info"
-  className="h-52 md:h-72 lg:h-80 w-full max-w-md mx-auto object-contain rounded-xl shadow-md"
-/>
+            <Card>
+              <CardHeader>
+                <CardTitle>Basic Information</CardTitle>
+                <CardDescription>Enter the fundamental details about your machine</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                  {renderInputWithBackgroundImage(
+                    "machineName",
+                    "Machine Name",
+                    machineName,
+                    handleMachineNameChange,
+                    "e.g., CNC Lathe Machine",
+                    "https://thumbs.dreamstime.com/b/close-up-milling-machine-lots-gold-flakes-ai-332839930.jpg",
+                    "",
+                    errors.machineName,
+                    true,
+                    "Enter a descriptive name for your machine",
+                    "text"
+                  )}
 
-      </div>
+                  {renderInputWithBackgroundImage(
+                    "machineCost",
+                    "Machine Cost",
+                    formData.machineCost,
+                    (value) => handleInputChange("machineCost", value),
+                    "e.g., 1500000",
+                 "https://5.imimg.com/data5/SELLER/Default/2022/9/VY/SB/BO/115365/16-feet-heavy-duty-lathe-machine-500x500.jpg",                    "₹",
+                    errors.machineCost,
+                    true,
+                    "Total purchase cost of the machine"
+                  )}
 
-      {/* Form section */}
-      <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="md:col-span-2 space-y-2">
-          <Label htmlFor="machineName" className="text-sm font-medium">
-            Machine Name <span className="text-red-500">*</span>
-          </Label>
-          <Input
-            id="machineName"
-            value={machineName}
-            onChange={(e) => handleMachineNameChange(e.target.value)}
-            placeholder="e.g., CNC Lathe Machine"
-            className={`h-11 ${errors.machineName ? "border-red-500" : ""}`}
-          />
-          {errors.machineName && <p className="text-sm text-red-600">{errors.machineName}</p>}
-        </div>
+                  {renderInputWithBackgroundImage(
+                    "lifeOfMachine",
+                    "Life of Machine",
+                    formData.lifeOfMachine,
+                    (value) => handleInputChange("lifeOfMachine", value),
+                    "e.g., 10",
+                  "https://5.imimg.com/data5/IOS/Default/2022/6/JB/VT/HW/98322859/product-jpeg-500x500.png",                    "years",
+                    errors.lifeOfMachine,
+                    true,
+                    "Expected operational life of the machine"
+                  )}
 
-        <div className="space-y-2">
-          <Label htmlFor="machineCost" className="text-sm font-medium">
-            Machine Cost (₹) <span className="text-red-500">*</span>
-          </Label>
-          <Input
-            id="machineCost"
-            type="number"
-            value={formData.machineCost || ""}
-            onChange={(e) => handleInputChange("machineCost", e.target.value)}
-            placeholder="e.g., 1500000"
-            className={`h-11 ${errors.machineCost ? "border-red-500" : ""}`}
-          />
-          {errors.machineCost && <p className="text-sm text-red-600">{errors.machineCost}</p>}
-        </div>
+                  {renderInputWithBackgroundImage(
+                    "workingHoursPerDay",
+                    "Working Hours Per Day",
+                    formData.workingHoursPerDay,
+                    (value) => handleInputChange("workingHoursPerDay", value),
+                    "e.g., 8",
+                    "https://plano-wfm.com/en/wp-content/uploads/sites/44/2023/08/Maximale-Arbeitszeit.jpg",                    "hours",
+                    errors.workingHoursPerDay,
+                    true,
+                    "Daily operational hours of the machine"
+                  )}
 
-        <div className="space-y-2">
-          <Label htmlFor="lifeOfMachine" className="text-sm font-medium">
-            Life of Machine (Years) <span className="text-red-500">*</span>
-          </Label>
-          <Input
-            id="lifeOfMachine"
-            type="number"
-            value={formData.lifeOfMachine || ""}
-            onChange={(e) => handleInputChange("lifeOfMachine", e.target.value)}
-            placeholder="e.g., 10"
-            className={`h-11 ${errors.lifeOfMachine ? "border-red-500" : ""}`}
-          />
-          {errors.lifeOfMachine && <p className="text-sm text-red-600">{errors.lifeOfMachine}</p>}
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="workingHoursPerDay" className="text-sm font-medium">
-            Working Hours per Day <span className="text-red-500">*</span>
-          </Label>
-          <Input
-            id="workingHoursPerDay"
-            type="number"
-            value={formData.workingHoursPerDay || ""}
-            onChange={(e) => handleInputChange("workingHoursPerDay", e.target.value)}
-            placeholder="e.g., 8"
-            className={`h-11 ${errors.workingHoursPerDay ? "border-red-500" : ""}`}
-          />
-          {errors.workingHoursPerDay && <p className="text-sm text-red-600">{errors.workingHoursPerDay}</p>}
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="balanceLifeOfMachine" className="text-sm font-medium">
-            Balance Life of Machine (Years) <span className="text-red-500">*</span>
-          </Label>
-          <Input
-            id="balanceLifeOfMachine"
-            type="number"
-            value={formData.balanceLifeOfMachine || ""}
-            onChange={(e) => handleInputChange("balanceLifeOfMachine", e.target.value)}
-            placeholder="e.g., 8"
-            className={`h-11 ${errors.balanceLifeOfMachine ? "border-red-500" : ""}`}
-          />
-          {errors.balanceLifeOfMachine && (
-            <p className="text-sm text-red-600">{errors.balanceLifeOfMachine}</p>
-          )}
-        </div>
-      </div>
-    </div>
-  </CardContent>
-</Card>
-
+                  {renderInputWithBackgroundImage(
+                    "balanceLifeOfMachine",
+                    "Balance Life of Machine",
+                    formData.balanceLifeOfMachine,
+                    (value) => handleInputChange("balanceLifeOfMachine", value),
+                    "e.g., 8",
+                        "https://www.brookings.edu/wp-content/uploads/2020/11/shutterstock_15284887.jpg?quality=75&w=1500",
+                    "years",
+                    errors.balanceLifeOfMachine,
+                    true,
+                    "Remaining useful life of the machine"
+                  )}
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Financial Parameters */}
             <Card>
@@ -312,53 +352,34 @@ export default function InvestmentPage() {
                 <CardTitle>Financial Parameters</CardTitle>
                 <CardDescription>Enter interest and scrap value information</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <CardContent>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {renderInputWithBackgroundImage(
+                    "interestRate",
+                    "Interest Rate",
+                    formData.interestRate,
+                    (value) => handleInputChange("interestRate", value),
+                    "e.g., 12.5",
+                    "https://i.cdn.newsbytesapp.com/images/l14520250325190740.jpeg",
+                    "%",
+                    undefined,
+                    false,
+                    "Annual interest rate for financing"
+                  )}
 
-                  {/* Interest Rate */}
-                  <div className="space-y-2">
-                    <img
-                      src="https://bsmedia.business-standard.com/_media/bs/img/article/2022-05/05/full/1651774950-0305.jpg?im=FeatureCrop,size=(826,465)"
-                      alt="Interest Icon"
-                      className="w-full h-40 object-contain rounded-md"
-                    />
-                    <Label htmlFor="interestRate" className="text-sm font-medium">
-                      Interest Rate (%)
-                    </Label>
-                    <Input
-                      id="interestRate"
-                      type="number"
-                      step="0.01"
-                      value={formData.interestRate || ""}
-                      onChange={(e) => handleInputChange("interestRate", e.target.value)}
-                      placeholder="e.g., 12.5"
-                      className="h-11 w-full"
-                    />
-                  </div>
-
-                  {/* Scrap Rate */}
-                  <div className="space-y-2">
-                    <img
-                      src="https://scraprate.in/wp-content/uploads/2023/11/Scrap-rate-logo.webp"
-                      alt="Scrap Icon"
-                      className="w-full h-40 object-contain rounded-md"
-                    />
-                    <Label htmlFor="scrapRate" className="text-sm font-medium">
-                      Scrap Rate (%)
-                    </Label>
-                    <Input
-                      id="scrapRate"
-                      type="number"
-                      step="0.01"
-                      value={formData.scrapRate || ""}
-                      onChange={(e) => handleInputChange("scrapRate", e.target.value)}
-                      placeholder="e.g., 10"
-                      className="h-11 w-full"
-                    />
-                  </div>
-
+                  {renderInputWithBackgroundImage(
+                    "scrapRate",
+                    "Scrap Rate",
+                    formData.scrapRate,
+                    (value) => handleInputChange("scrapRate", value),
+                    "e.g., 10",
+                    "https://scraprate.in/wp-content/uploads/2023/11/Scrap-rate-logo.webp",
+                    "%",
+                    undefined,
+                    false,
+                    "Percentage of original value as scrap"
+                  )}
                 </div>
-
               </CardContent>
             </Card>
 
@@ -373,42 +394,25 @@ export default function InvestmentPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {renderCalculationCard(
+                      "Machine Life",
+                      calculatedData.machineLifeHours,
+                      "Hours",
+                      "https://t4.ftcdn.net/jpg/03/02/26/55/360_F_302265500_HcxnXEWpFghwA9FCjAWJXGtc1jQ0kyhs.jpg",
+                      `${formData.lifeOfMachine} years × ${formData.workingHoursPerDay} hrs/day × 365 days`
+                    )}
 
-                    {/* Machine Life Hours */}
-                    <div className="p-4 bg-white rounded-lg border border-green-200 space-y-2">
-                      <img
-                        src="https://t4.ftcdn.net/jpg/03/02/26/55/360_F_302265500_HcxnXEWpFghwA9FCjAWJXGtc1jQ0kyhs.jpg" // example machine icon
-                        alt="Machine Life Icon"
-                        className="w-full h-32 object-contain"
-                      />
-                      <div className="text-sm font-medium text-green-800">Machine Life (Hours)</div>
-                      <div className="text-xl font-bold text-green-900">
-                        {calculatedData.machineLifeHours.toLocaleString()}
-                      </div>
-                      <div className="text-xs text-green-600">
-                        {formData.lifeOfMachine} years × {formData.workingHoursPerDay} hrs/day × 365 days
-                      </div>
-                    </div>
-
-                    {/* Current Value of Machine */}
-                    <div className="p-4 bg-white rounded-lg border border-blue-200 space-y-2">
-                      <img
-                        src="https://www.zintilon.com/wp-content/uploads/2024/06/Precision-machining-process-ongoing.jpg" // example currency/money icon
-                        alt="Current Value Icon"
-                        className="w-full h-32 object-contain"
-                      />
-                      <div className="text-sm font-medium text-blue-800">Current Value of Machine</div>
-                      <div className="text-xl font-bold text-blue-900">
-                        ₹{calculatedData.currentValueOfMachine.toLocaleString()}
-                      </div>
-                      <div className="text-xs text-blue-600">After depreciation calculation</div>
-                    </div>
-
+                    {renderCalculationCard(
+                      "Current Value",
+                      calculatedData.currentValueOfMachine,
+                      "₹",
+                      "https://www.zintilon.com/wp-content/uploads/2024/06/Precision-machining-process-ongoing.jpg",
+                      "After depreciation calculation"
+                    )}
                   </div>
                 </CardContent>
               </Card>
             )}
-
 
             {/* Navigation */}
             <div className="flex flex-col sm:flex-row justify-between gap-4 pt-6">

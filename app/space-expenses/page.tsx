@@ -12,6 +12,7 @@ import type { MachineData } from "@/lib/firebaseService"
 import Navbar from "@/components/navbar"
 import Link from "next/link"
 import Image from "next/image"
+
 export default function SpaceExpensesPage() {
   const router = useRouter()
   const [formData, setFormData] = useState<MachineData["spaceData"]>({
@@ -90,25 +91,93 @@ export default function SpaceExpensesPage() {
     router.push("/investment")
   }
 
+  const renderInputWithBackgroundImage = (
+    id: string,
+    label: string,
+    value: number,
+    onChange: (value: string) => void,
+    placeholder: string,
+    imageUrl: string,
+    error?: string,
+    required: boolean = false,
+    description?: string
+  ) => (
+    <div className="space-y-2">
+      <div
+        className="relative p-6 bg-cover bg-center text-white rounded-lg min-h-[200px] flex flex-col justify-between hover:shadow-lg transition-shadow duration-200"
+        style={{
+          backgroundImage: `url(${imageUrl})`,
+          backgroundBlendMode: "overlay",
+          backgroundColor: "rgba(0, 0, 0, 0.6)",
+        }}
+      >
+        <div className="space-y-4">
+          <Label htmlFor={id} className="text-white font-semibold text-lg">
+            {label} {required && <span className="text-red-300">*</span>}
+          </Label>
+          
+          <Input
+            id={id}
+            type="number"
+            value={value || ""}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={placeholder}
+            className={`h-12 text-lg font-medium bg-white/90 backdrop-blur-sm border-white/50 text-gray-900 placeholder:text-gray-600 ${
+              error ? "border-red-400" : "border-white/50"
+            } focus:border-white focus:bg-white`}
+          />
+          
+          {description && (
+            <p className="text-white/80 text-sm">{description}</p>
+          )}
+        </div>
+      </div>
+      {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
+    </div>
+  )
+
+  const renderCalculationCard = (title: string, value: number, imageUrl: string, colorScheme: string = "blue") => {
+    const colorClasses = {
+      green: {
+        text: "text-green-800",
+        valueText: "text-green-900",
+        subText: "text-green-600"
+      },
+      blue: {
+        text: "text-blue-800", 
+        valueText: "text-blue-900",
+        subText: "text-blue-600"
+      }
+    }
+
+    const colors = colorClasses[colorScheme as keyof typeof colorClasses] || colorClasses.blue
+
+    return (
+      <div
+        className="relative p-6 bg-cover bg-center text-white rounded-lg min-h-[200px] flex flex-col justify-end"
+        style={{
+          backgroundImage: `url(${imageUrl})`,
+          backgroundBlendMode: "overlay",
+          backgroundColor: "rgba(0, 0, 0, 0.5)",
+        }}
+      >
+        <div className="space-y-2">
+          <div className="text-white font-medium text-lg">{title}</div>
+          <div className="text-3xl font-bold text-white">
+            ₹{value.toLocaleString()}
+          </div>
+          <div className="text-white/80 text-sm">Per month</div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar title="Space Expenses" currentStep={2} totalSteps={7} />
 
       <main className="md:ml-64 pt-4">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          {/* Breadcrumb */}
-          {/* <div className="flex items-center space-x-2 text-sm text-gray-600 mb-6">
-            <Link href="/dashboard" className="hover:text-blue-600">
-              Dashboard
-            </Link>
-            <span>/</span>
-            <Link href="/investment" className="hover:text-blue-600">
-              Investment
-            </Link>
-            <span>/</span>
-            <span className="text-gray-900 font-medium">Space Expenses</span>
-          </div> */}
-
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-center space-x-3 mb-4">
@@ -122,15 +191,18 @@ export default function SpaceExpensesPage() {
                 </p>
               </div>
             </div>
-    <div>
-      <Image
-        src="https://estimatorflorida.com/wp-content/uploads/2022/04/cost-to-build-a-warehouse.jpg"
-        alt="Remote Image"
-        width={900} // original width for aspect ratio
-        height={300} // original height for aspect ratio
-        style={{ maxWidth: '900px', maxHeight: '200px', width: '100%', height: 'auto' }}
-      />
-    </div>
+
+            <div className="mb-6">
+              <Image
+                src="https://estimatorflorida.com/wp-content/uploads/2022/04/cost-to-build-a-warehouse.jpg"
+                alt="Factory Warehouse"
+                width={900}
+                height={300}
+                style={{ maxWidth: '900px', maxHeight: '200px', width: '100%', height: 'auto' }}
+                className="rounded-lg shadow-md"
+              />
+            </div>
+
             <Alert className="bg-blue-50 border-blue-200">
               <Info className="w-4 h-4 text-blue-600" />
               <AlertDescription className="text-blue-800">
@@ -139,203 +211,135 @@ export default function SpaceExpensesPage() {
             </Alert>
           </div>
 
-<div className="space-y-6">
-  {/* Factory Space Information */}
-  <Card>
-    <CardHeader>
-      <CardTitle>Factory Space Information</CardTitle>
-      <CardDescription>Enter details about your factory space and rent</CardDescription>
-    </CardHeader>
-    <CardContent className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-2">
-          <img
-            src="https://www.wsm.eu/wp-content/uploads/2023/05/raumsystem-im-innenbereich-2.jpg"
-            alt="Factory Rent"
-            className="w-150 h-40 object-contain rounded-md"
-          />
-          <Label htmlFor="factoryRentPerMonth" className="text-sm font-medium">
-            Factory Rent Per Month (₹) <span className="text-red-500">*</span>
-          </Label>
-          <Input
-            id="factoryRentPerMonth"
-            type="number"
-            value={formData.factoryRentPerMonth || ""}
-            onChange={(e) => handleInputChange("factoryRentPerMonth", e.target.value)}
-            placeholder="e.g., 50000"
-            className={`h-11 ${errors.factoryRentPerMonth ? "border-red-500" : ""}`}
-          />
-          {errors.factoryRentPerMonth && <p className="text-sm text-red-600">{errors.factoryRentPerMonth}</p>}
-        </div>
+          <div className="space-y-8">
+            {/* Factory Space Information */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Factory Space Information</CardTitle>
+                <CardDescription>Enter details about your factory space and rent</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {renderInputWithBackgroundImage(
+                    "factoryRentPerMonth",
+                    "Factory Rent Per Month (₹)",
+                    formData.factoryRentPerMonth,
+                    (value) => handleInputChange("factoryRentPerMonth", value),
+                    "e.g., 50000",
+                    "https://www.wsm.eu/wp-content/uploads/2023/05/raumsystem-im-innenbereich-2.jpg",
+                    errors.factoryRentPerMonth,
+                    true
+                  )}
 
-        <div className="space-y-2">
-          <img
-            src="https://5.imimg.com/data5/SELLER/Default/2024/2/388164104/RD/JF/CG/205690783/80-000-sqft-warehouse-gowdown-for-rent-lease-at-kompally-hyderabad-tg.jpg"
-            alt="Factory Space"
-            className="w-150 h-40 object-contain rounded-md"
-          />
-          <Label htmlFor="factorySpaceInSqFt" className="text-sm font-medium">
-            Total Factory Space (sq ft) <span className="text-red-500">*</span>
-          </Label>
-          <Input
-            id="factorySpaceInSqFt"
-            type="number"
-            value={formData.factorySpaceInSqFt || ""}
-            onChange={(e) => handleInputChange("factorySpaceInSqFt", e.target.value)}
-            placeholder="e.g., 2000"
-            className={`h-11 ${errors.factorySpaceInSqFt ? "border-red-500" : ""}`}
-          />
-          {errors.factorySpaceInSqFt && <p className="text-sm text-red-600">{errors.factorySpaceInSqFt}</p>}
-        </div>
-      </div>
-    </CardContent>
-  </Card>
+                  {renderInputWithBackgroundImage(
+                    "factorySpaceInSqFt",
+                    "Total Factory Space (sq ft)",
+                    formData.factorySpaceInSqFt,
+                    (value) => handleInputChange("factorySpaceInSqFt", value),
+                    "e.g., 2000",
+                    "https://5.imimg.com/data5/SELLER/Default/2024/2/388164104/RD/JF/CG/205690783/80-000-sqft-warehouse-gowdown-for-rent-lease-at-kompally-hyderabad-tg.jpg",
+                    errors.factorySpaceInSqFt,
+                    true
+                  )}
+                </div>
+              </CardContent>
+            </Card>
 
-  {/* Machine Space Information */}
-  <Card>
-    <CardHeader>
-      <CardTitle>Machine Space Information</CardTitle>
-      <CardDescription>Enter details about the space occupied by your machine</CardDescription>
-    </CardHeader>
-    <CardContent className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-2">
-          <img
-            src="https://www.machinemetrics.com/hs-fs/hubfs/fanuc-robots-factory.jpg?width=918&name=fanuc-robots-factory.jpg"
-            alt="Machine Space"
-            className="w-150 h-40 object-contain rounded-md"
-          />
-          <Label htmlFor="spaceOccupiedByMachine" className="text-sm font-medium">
-            Space Occupied by Machine (sq ft) <span className="text-red-500">*</span>
-          </Label>
-          <Input
-            id="spaceOccupiedByMachine"
-            type="number"
-            value={formData.spaceOccupiedByMachine || ""}
-            onChange={(e) => handleInputChange("spaceOccupiedByMachine", e.target.value)}
-            placeholder="e.g., 100"
-            className={`h-11 ${errors.spaceOccupiedByMachine ? "border-red-500" : ""}`}
-          />
-          {errors.spaceOccupiedByMachine && (
-            <p className="text-sm text-red-600">{errors.spaceOccupiedByMachine}</p>
-          )}
-        </div>
+            {/* Machine Space Information */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Machine Space Information</CardTitle>
+                <CardDescription>Enter details about the space occupied by your machine</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {renderInputWithBackgroundImage(
+                    "spaceOccupiedByMachine",
+                    "Space Occupied by Machine (sq ft)",
+                    formData.spaceOccupiedByMachine,
+                    (value) => handleInputChange("spaceOccupiedByMachine", value),
+                    "e.g., 100",
+                    "https://www.machinemetrics.com/hs-fs/hubfs/fanuc-robots-factory.jpg?width=918&name=fanuc-robots-factory.jpg",
+                    errors.spaceOccupiedByMachine,
+                    true
+                  )}
 
-        <div className="space-y-2">
-          <img
-            src="https://cdn.britannica.com/17/197117-050-E0626858/Rows-computer-numerical-control-milling-machines-factory.jpg"
-            alt="Number of Machines"
-            className="w-150 h-40 object-contain rounded-md"
-          />
-          <Label htmlFor="numberOfMachinesInFactory" className="text-sm font-medium">
-            Number of Machines in Factory <span className="text-red-500">*</span>
-          </Label>
-          <Input
-            id="numberOfMachinesInFactory"
-            type="number"
-            value={formData.numberOfMachinesInFactory || ""}
-            onChange={(e) => handleInputChange("numberOfMachinesInFactory", e.target.value)}
-            placeholder="e.g., 5"
-            className={`h-11 ${errors.numberOfMachinesInFactory ? "border-red-500" : ""}`}
-          />
-          {errors.numberOfMachinesInFactory && (
-            <p className="text-sm text-red-600">{errors.numberOfMachinesInFactory}</p>
-          )}
-        </div>
+                  {renderInputWithBackgroundImage(
+                    "numberOfMachinesInFactory",
+                    "Number of Machines in Factory",
+                    formData.numberOfMachinesInFactory,
+                    (value) => handleInputChange("numberOfMachinesInFactory", value),
+                    "e.g., 5",
+                    "https://cdn.britannica.com/17/197117-050-E0626858/Rows-computer-numerical-control-milling-machines-factory.jpg",
+                    errors.numberOfMachinesInFactory,
+                    true
+                  )}
 
-        <div className="space-y-2">
-          <img
-            src="https://www.dgicommunications.com/wp-content/uploads/2021/10/dgi-office-space-design.jpg"
-            alt="Common Space"
-            className="w-150 h-40 object-contain rounded-md"
-          />
-          <Label htmlFor="commonSpaceInSqFt" className="text-sm font-medium">
-            Common Space (sq ft)
-          </Label>
-          <Input
-            id="commonSpaceInSqFt"
-            type="number"
-            value={formData.commonSpaceInSqFt || ""}
-            onChange={(e) => handleInputChange("commonSpaceInSqFt", e.target.value)}
-            placeholder="e.g., 500"
-            className="h-11"
-          />
-          <p className="text-xs text-gray-500">
-            Common space includes walkways, storage areas, and other shared spaces
-          </p>
-        </div>
-      </div>
-    </CardContent>
-  </Card>
+                  {renderInputWithBackgroundImage(
+                    "commonSpaceInSqFt",
+                    "Common Space (sq ft)",
+                    formData.commonSpaceInSqFt,
+                    (value) => handleInputChange("commonSpaceInSqFt", value),
+                    "e.g., 500",
+                    "https://www.dgicommunications.com/wp-content/uploads/2021/10/dgi-office-space-design.jpg",
+                    undefined,
+                    false,
+                    "Common space includes walkways, storage areas, and other shared spaces"
+                  )}
+                </div>
+              </CardContent>
+            </Card>
 
-  {/* Space Cost Calculation */}
-{formData.factoryRentPerMonth > 0 && formData.factorySpaceInSqFt > 0 && (
-  <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-green-200">
-    <CardHeader>
-      <CardTitle className="text-green-800">Space Cost Calculation</CardTitle>
-      <CardDescription className="text-green-700">
-        Estimated space cost based on your inputs
-      </CardDescription>
-    </CardHeader>
-    <CardContent>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Space Cost Calculation */}
+            {formData.factoryRentPerMonth > 0 && formData.factorySpaceInSqFt > 0 && (
+              <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-green-200">
+                <CardHeader>
+                  <CardTitle className="text-green-800">Space Cost Calculation</CardTitle>
+                  <CardDescription className="text-green-700">
+                    Estimated space cost based on your inputs
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {renderCalculationCard(
+                      "Rent per sq ft",
+                      parseFloat((formData.factoryRentPerMonth / formData.factorySpaceInSqFt).toFixed(2)),
+                      "https://5.imimg.com/data5/SELLER/Default/2024/2/388164104/RD/JF/CG/205690783/80-000-sqft-warehouse-gowdown-for-rent-lease-at-kompally-hyderabad-tg.jpg",
+                      "green"
+                    )}
 
-        {/* Rent per sq ft */}
-        <div className="p-4 bg-white rounded-lg border border-green-200 space-y-2">
-          <img
-            src="https://5.imimg.com/data5/SELLER/Default/2024/2/388164104/RD/JF/CG/205690783/80-000-sqft-warehouse-gowdown-for-rent-lease-at-kompally-hyderabad-tg.jpg" // example rent/space icon
-            alt="Rent Icon"
-            className="w-290 h-132 object-contain"
-          />
-          <div className="text-sm font-medium text-green-800">Rent per sq ft</div>
-          <div className="text-xl font-bold text-green-900">
-            ₹{(formData.factoryRentPerMonth / formData.factorySpaceInSqFt).toFixed(2)}
+                    {renderCalculationCard(
+                      "Machine Space Cost",
+                      parseFloat(((formData.factoryRentPerMonth / formData.factorySpaceInSqFt) * formData.spaceOccupiedByMachine).toFixed(2)),
+                      "https://d3h6k4kfl8m9p0.cloudfront.net/uploads/2014/03/Amy-Shop-from-Top.jpg",
+                      "blue"
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Navigation */}
+            <div className="flex flex-col sm:flex-row justify-between gap-4 pt-6">
+              <Button variant="outline" onClick={goBack} className="w-full sm:w-auto">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Previous
+              </Button>
+              <Button
+                onClick={saveAndContinue}
+                disabled={
+                  !formData.factoryRentPerMonth ||
+                  !formData.factorySpaceInSqFt ||
+                  !formData.spaceOccupiedByMachine ||
+                  !formData.numberOfMachinesInFactory
+                }
+                className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+              >
+                Save & Continue
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
           </div>
-          <div className="text-xs text-green-600">Per month</div>
-        </div>
-
-        {/* Machine Space Cost */}
-        <div className="p-4 bg-white rounded-lg border border-blue-200 space-y-2">
-          <img
-            src="https://d3h6k4kfl8m9p0.cloudfront.net/uploads/2014/03/Amy-Shop-from-Top.jpg" // example space/machine icon
-            alt="Machine Space Icon"
-            className="w-150 h-132 object-contain"
-          />
-          <div className="text-sm font-medium text-blue-800">Machine Space Cost</div>
-          <div className="text-xl font-bold text-blue-900">
-            ₹{((formData.factoryRentPerMonth / formData.factorySpaceInSqFt) * formData.spaceOccupiedByMachine).toFixed(2)}
-          </div>
-          <div className="text-xs text-blue-600">Per month</div>
-        </div>
-
-      </div>
-    </CardContent>
-  </Card>
-)}
-
-
-  {/* Navigation */}
-  <div className="flex flex-col sm:flex-row justify-between gap-4 pt-6">
-    <Button variant="outline" onClick={goBack} className="w-full sm:w-auto">
-      <ArrowLeft className="w-4 h-4 mr-2" />
-      Previous
-    </Button>
-    <Button
-      onClick={saveAndContinue}
-      disabled={
-        !formData.factoryRentPerMonth ||
-        !formData.factorySpaceInSqFt ||
-        !formData.spaceOccupiedByMachine ||
-        !formData.numberOfMachinesInFactory
-      }
-      className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
-    >
-      Save & Continue
-      <ArrowRight className="w-4 h-4 ml-2" />
-    </Button>
-  </div>
-</div>
-
         </div>
       </main>
     </div>
