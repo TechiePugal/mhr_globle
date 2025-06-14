@@ -20,16 +20,17 @@ import {
   ChevronRight,
   User,
   AreaChart,
+  ArrowLeft,
 } from "lucide-react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { getCurrentUser, clearCurrentUser } from "@/lib/firebaseService"
 import Image from "next/image"
 import Logo from "./mhrlogo.png"
+
 const navigationItems = [
-  
-    { id: "dashboard", label: "Home", icon: Home, href: "/dashboard" },
-    { id: "home", label: "Dashboard", icon: AreaChart, href: "/home" },
+  { id: "home", label: "Home", icon: AreaChart, href: "/home" },
+  { id: "dashboard", label: "Dashboard", icon: Home, href: "/dashboard" },
   { id: "machines", label: "All Machines", icon: List, href: "/machines" },
   { id: "reports", label: "Reports", icon: FileText, href: "/reports" },
   { id: "investment", label: "Investment", icon: Calculator, href: "/investment", step: 1 },
@@ -58,6 +59,10 @@ export default function Navbar({ title = "Machine Hour Rate Calculator", current
     router.push("/")
   }
 
+  const handleBack = () => {
+    router.back()
+  }
+
   const getCurrentMachine = () => {
     if (typeof window === "undefined") return null
 
@@ -71,33 +76,51 @@ export default function Navbar({ title = "Machine Hour Rate Calculator", current
 
   const currentUser = getCurrentUser()
   const machineName = getCurrentMachine()
+  const isHomePage = pathname === "/home"
 
   return (
     <>
       {/* Desktop Navbar */}
-      <nav className="bg-blue-800  border-b border-gray-200 shadow-sm sticky top-0 z-50">
+      <nav className="bg-blue-800 border-b border-gray-200 shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            {/* Logo and Title */}
+            {/* Logo/Back Button and Title */}
             <div className="flex items-center space-x-4">
-              <Link href="/dashboard" className="flex items-center space-x-3">
-                <div className="flex items-center justify-center p-1 sm:p-2 lg:p-3">
-            <Image
-              src={Logo}
-              alt="Logo"
-              className="w-[88px] h-[88px] sm:w-24 sm:h-24 lg:w-28 lg:h-28 object-contain transition-all duration-300"
-            />
-          </div>
-                <div className="hidden sm:block">
-<h1 className="text-lg sm:text-xl font-bold text-yellow-400 tracking-wide">
-              {title}
-            </h1>                  {currentUser && (
-                    <p className="text-lg sm:text-xl font-bold text-yellow-400 tracking-wide">
-                      {currentUser.companyName} {machineName && `• ${machineName}`}
-                    </p>
-                  )}
-                </div>
-              </Link>
+              {isHomePage ? (
+                // Show only logo on home page
+                <Link href="/dashboard" className="flex items-center space-x-3">
+                  <div className="flex items-center justify-center p-1 sm:p-2 lg:p-3">
+                    <Image
+                      src={Logo}
+                      alt="Logo"
+                      className="w-[88px] h-[88px] sm:w-24 sm:h-24 lg:w-28 lg:h-28 object-contain transition-all duration-300"
+                    />
+                  </div>
+                </Link>
+              ) : (
+                // Show back button on other pages
+                <>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleBack}
+                    className="flex items-center bg-green-800 space-x-2 text-yellow-400 hover:text-yellow-300 hover:bg-red-700 px-3 py-2 sm:px-4 sm:py-3 lg:px-6 lg:py-4 text-lg sm:text-xl lg:text-2xl font-bold"
+                  >
+                    <ArrowLeft className="w-5 h-5  sm:w-6 sm:h-6 lg:w-7 lg:h-7" />
+                    <span>BACK</span>
+                  </Button>
+                  <div className="hidden sm:block">
+                    <h1 className="text-lg sm:text-xl font-bold text-yellow-400 tracking-wide">
+                      {title}
+                    </h1>
+                    {currentUser && (
+                      <p className="text-lg sm:text-xl font-bold text-yellow-400 tracking-wide">
+                        {currentUser.companyName} {machineName && `• ${machineName}`}
+                      </p>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Progress Indicator */}
@@ -133,31 +156,34 @@ export default function Navbar({ title = "Machine Hour Rate Calculator", current
             </div>
 
             {/* Mobile Menu Button */}
-<div className="md:hidden">
-  <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-    <SheetTrigger asChild>
-      <Button variant="ghost" size="sm" className="p-2">
-        <Menu className="w-8 h-8 text-yellow-400" /> {/* Twice as large yellow menu icon */}
-      </Button>
-    </SheetTrigger>
-    <SheetContent side="right" className="w-80">
-      <MobileNavigation
-        navigationItems={navigationItems}
-        pathname={pathname}
-        onLogout={handleLogout}
-        onClose={() => setMobileMenuOpen(false)}
-        machineName={machineName}
-      />
-    </SheetContent>
-  </Sheet>
-</div>
+            <div className="md:hidden">
+              <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="sm" className="p-2">
+                    <Menu className="w-8 h-8 text-yellow-400" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-80">
+                  <MobileNavigation
+                    navigationItems={navigationItems}
+                    pathname={pathname}
+                    onLogout={handleLogout}
+                    onClose={() => setMobileMenuOpen(false)}
+                    currentUser={currentUser}
+                    machineName={machineName}
+                    onBack={handleBack}
+                    isHomePage={isHomePage}
+                  />
+                </SheetContent>
+              </Sheet>
+            </div>
           </div>
         </div>
 
         {/* Mobile Progress Bar */}
         {currentStep && totalSteps && (
           <div className="md:hidden px-4 pb-3">
-            <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
+            <div className="flex items-center justify-between text-sm text-yellow-400 mb-2">
               <span>
                 Step {currentStep} of {totalSteps}
               </span>
@@ -271,47 +297,63 @@ function DesktopNavigation({ navigationItems, pathname, currentUser, machineName
           </div>
         </div>
       </div>
-        <footer className="text-center mt-4 pt-4 text-[10px] text-gray-500 px-4 leading-relaxed border-t border-gray-200">
-      © 2025 MHR Calculator. <br/> All rights reserved.
-          <br />
-          Architected by{" "}
-          <a
-            href="https://www.kannanamirthalingam.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-500 hover:underline"
-          >
-            Kannan
-          </a>
-          <br />
-          Developed by{" "}
-          <a
-            href="https://www.linkedin.com/in/techiepugal-in-090135272/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-500 hover:underline"
-          >
-            Pugal
-          </a>
-        </footer>
-
+      <footer className="text-center mt-4 pt-4 text-[10px] text-gray-500 px-4 leading-relaxed border-t border-gray-200">
+        © 2025 MHR Calculator. <br/> All rights reserved.
+        <br />
+        Architected by{" "}
+        <a
+          href="https://www.kannanamirthalingam.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-500 hover:underline"
+        >
+          Kannan
+        </a>
+        <br />
+        Developed by{" "}
+        <a
+          href="https://www.linkedin.com/in/techiepugal-in-090135272/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-500 hover:underline"
+        >
+          Pugal
+        </a>
+      </footer>
     </div>
   )
 }
 
-function MobileNavigation({ navigationItems, pathname, onLogout, onClose, currentUser, machineName }: any) {
+function MobileNavigation({ navigationItems, pathname, onLogout, onClose, currentUser, machineName, onBack, isHomePage }: any) {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="p-4 border-b border-gray-200">
-        <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
-            <Calculator className="w-5 h-5 text-white" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
+              <Calculator className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h2 className="font-semibold text-gray-900">Navigation</h2>
+              {currentUser && <p className="text-xs text-gray-500">{currentUser.companyName}</p>}
+            </div>
           </div>
-          <div>
-            <h2 className="font-semibold text-gray-900">Navigation</h2>
-            {currentUser && <p className="text-xs text-gray-500">{currentUser.companyName}</p>}
-          </div>
+          {/* Mobile Back Button */}
+          {!isHomePage && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                onBack()
+                onClose()
+              }}
+              className="flex items-center space-x-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50"
+            >
+              <ArrowLeft className="w-5 h-5" />
+              <span className="text-sm">Back</span>
+            </Button>
+          )}
         </div>
       </div>
 
@@ -341,7 +383,7 @@ function MobileNavigation({ navigationItems, pathname, onLogout, onClose, curren
         <div>
           <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Main</h3>
           <div className="space-y-2">
-            {navigationItems.slice(0, 2).map((item: any) => {
+            {navigationItems.slice(0, 4).map((item: any) => {
               const Icon = item.icon
               const isActive = pathname === item.href
               return (
@@ -365,7 +407,7 @@ function MobileNavigation({ navigationItems, pathname, onLogout, onClose, curren
         <div>
           <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Calculation Steps</h3>
           <div className="space-y-2">
-            {navigationItems.slice(2).map((item: any) => {
+            {navigationItems.slice(4).map((item: any) => {
               const Icon = item.icon
               const isActive = pathname === item.href
               return (
@@ -427,7 +469,6 @@ function MobileNavigation({ navigationItems, pathname, onLogout, onClose, curren
           Logout
         </Button>
       </div>
-      
     </div>
   )
 }
