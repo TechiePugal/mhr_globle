@@ -1,16 +1,20 @@
 "use client"
 
-import type React from "react"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Calculator, Lock, Eye, EyeOff } from "lucide-react"
 import { loginUser, setCurrentUser } from "@/lib/firebaseService"
-import Link from "next/link"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -21,9 +25,15 @@ export default function LoginPage() {
   const router = useRouter()
 
   useEffect(() => {
-    // Check if user is already logged in
     const isLoggedIn = localStorage.getItem("isLoggedIn")
-    if (isLoggedIn === "true") {
+    const licenseExpiry = localStorage.getItem("licenseExpiry")
+    if (isLoggedIn === "true" && licenseExpiry) {
+      const expiryDate = new Date(licenseExpiry)
+      if (new Date() > expiryDate) {
+        localStorage.clear()
+        setError("Your license has expired. Please contact the administrator.")
+        return
+      }
       router.push("/home")
     }
   }, [router])
@@ -34,7 +44,6 @@ export default function LoginPage() {
     setError("")
 
     try {
-      // Validate inputs
       if (!email || !password) {
         setError("Please enter both email and password")
         setLoading(false)
@@ -43,10 +52,30 @@ export default function LoginPage() {
 
       const user = await loginUser(email, password)
 
-      // Set user session
-      localStorage.setItem("isLoggedIn", "true")
-      setCurrentUser(user)
+      if (!user.isActive) {
+        setError("Your account is not active. Please contact the administrator.")
+        setLoading(false)
+        return
+      }
 
+const expiry = user.licenseExpiry?.toDate?.() || new Date(user.licenseExpiry)
+
+if (isNaN(expiry.getTime())) {
+  setError("Invalid license expiry date. Please contact admin.")
+  setLoading(false)
+  return
+}
+
+if (expiry < new Date()) {
+  setError("Your license has expired. Please contact the administrator.")
+  setLoading(false)
+  return
+}
+
+
+      localStorage.setItem("isLoggedIn", "true")
+      localStorage.setItem("licenseExpiry", expiry.toISOString())
+      setCurrentUser(user)
       router.push("/dashboard")
     } catch (error: any) {
       setError(error.message || "Login failed. Please check your credentials.")
@@ -58,7 +87,6 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Header */}
         <div className="text-center mb-8">
           <div className="mx-auto mb-4 w-16 h-16 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
             <Calculator className="w-8 h-8 text-white" />
@@ -110,7 +138,11 @@ export default function LoginPage() {
                     className="absolute right-0 top-0 h-11 px-3 hover:bg-transparent"
                     onClick={() => setShowPassword(!showPassword)}
                   >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
                   </Button>
                 </div>
               </div>
@@ -139,32 +171,6 @@ export default function LoginPage() {
                 )}
               </Button>
             </form>
-
-            {/* Registration Link */}
-            {/* <div className="mt-6 text-center">
-              <p className="text-sm text-gray-600 mb-4">
-                Don't have a company account?{" "}
-                <Link href="/register" className="font-medium text-blue-600 hover:text-blue-500">
-                  Register your company
-                </Link>
-              </p>
-            </div> */}
-
-            {/* Demo Credentials */}
-            {/* <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-              <p className="text-sm font-medium text-blue-900 mb-2">Demo Account:</p>
-              <div className="space-y-1 text-sm text-blue-700">
-                <p>
-                  <span className="font-medium">Email:</span> demo@company.com
-                </p>
-                <p>
-                  <span className="font-medium">Password:</span> demo123
-                </p>
-              </div>
-              <p className="text-xs text-blue-600 mt-2">
-                Or create your own company account using the registration link above
-              </p>
-            </div> */}
           </CardContent>
         </Card>
 
