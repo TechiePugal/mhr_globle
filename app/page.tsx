@@ -141,17 +141,17 @@ export default function LoginPage() {
             </form>
 
             {/* Registration Link */}
-            <div className="mt-6 text-center">
+            {/* <div className="mt-6 text-center">
               <p className="text-sm text-gray-600 mb-4">
                 Don't have a company account?{" "}
                 <Link href="/register" className="font-medium text-blue-600 hover:text-blue-500">
                   Register your company
                 </Link>
               </p>
-            </div>
+            </div> */}
 
             {/* Demo Credentials */}
-            <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+            {/* <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
               <p className="text-sm font-medium text-blue-900 mb-2">Demo Account:</p>
               <div className="space-y-1 text-sm text-blue-700">
                 <p>
@@ -164,7 +164,7 @@ export default function LoginPage() {
               <p className="text-xs text-blue-600 mt-2">
                 Or create your own company account using the registration link above
               </p>
-            </div>
+            </div> */}
           </CardContent>
         </Card>
 
