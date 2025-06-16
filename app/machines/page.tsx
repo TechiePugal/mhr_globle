@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 
@@ -18,16 +18,38 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { useToast } from "@/components/ui/use-toast"
 
-import { ArrowLeft, Edit, Trash2, Plus, Calculator, LayoutGrid, Table2 } from "lucide-react"
-import { type MachineData, getAllMachines, deleteMachine } from "@/lib/firebaseService"
+import { 
+  ArrowLeft, 
+  Edit, 
+  Trash2, 
+  Plus, 
+  Calculator, 
+  LayoutGrid, 
+  Table2, 
+  Download, 
+  Upload, 
+  FileText,
+  MoreVertical 
+} from "lucide-react"
+import { type MachineData, getAllMachines, deleteMachine, saveMachine } from "@/lib/firebaseService"
 import Navbar from "@/components/navbar"
 
 export default function MachineDashboard() {
   const router = useRouter()
+  const { toast } = useToast()
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [machines, setMachines] = useState<MachineData[]>([])
   const [loading, setLoading] = useState(true)
   const [isCardView, setIsCardView] = useState(true)
+  const [isImporting, setIsImporting] = useState(false)
 
   useEffect(() => {
     const isLoggedIn = localStorage.getItem("isLoggedIn")
@@ -44,6 +66,11 @@ export default function MachineDashboard() {
       setMachines(machineList)
     } catch (error) {
       console.error("Error fetching machines:", error)
+      toast({
+        title: "Error",
+        description: "Failed to fetch machines",
+        variant: "destructive",
+      })
     } finally {
       setLoading(false)
     }
@@ -63,8 +90,136 @@ export default function MachineDashboard() {
     try {
       await deleteMachine(id)
       setMachines((prev) => prev.filter((m) => m.id !== id))
+      toast({
+        title: "Success",
+        description: "Machine deleted successfully",
+      })
     } catch (error) {
       console.error("Failed to delete machine:", error)
+      toast({
+        title: "Error",
+        description: "Failed to delete machine",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const exportMachines = () => {
+    try {
+      const exportData = {
+        exportDate: new Date().toISOString(),
+        version: "1.0",
+        machineCount: machines.length,
+        machines: machines.map(machine => ({
+          ...machine,
+          // Remove Firebase-specific ID for clean export
+          id: undefined
+        }))
+      }
+
+      const dataStr = JSON.stringify(exportData, null, 2)
+      const dataBlob = new Blob([dataStr], { type: 'application/json' })
+      
+      const url = URL.createObjectURL(dataBlob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `machine-backup-${new Date().toISOString().split('T')[0]}.json`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+
+      toast({
+        title: "Export Successful",
+        description: `${machines.length} machines exported successfully`,
+      })
+    } catch (error) {
+      console.error("Export failed:", error)
+      toast({
+        title: "Export Failed",
+        description: "Failed to export machine data",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click()
+  }
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    if (file.type !== 'application/json') {
+      toast({
+        title: "Invalid File",
+        description: "Please select a valid JSON file",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setIsImporting(true)
+    
+    try {
+      const fileText = await file.text()
+      const importData = JSON.parse(fileText)
+
+      // Validate import data structure
+      if (!importData.machines || !Array.isArray(importData.machines)) {
+        throw new Error("Invalid backup file format")
+      }
+
+      let successCount = 0
+      let errorCount = 0
+
+      // Import each machine
+      for (const machineData of importData.machines) {
+        try {
+          // Validate required fields
+          if (!machineData.machineName) {
+            throw new Error("Machine name is required")
+          }
+
+          // Save machine to Firebase (will generate new ID)
+          await saveMachine(machineData)
+          successCount++
+        } catch (error) {
+          console.error("Failed to import machine:", machineData.machineName, error)
+          errorCount++
+        }
+      }
+
+      // Refresh the machines list
+      await fetchMachines()
+
+      if (successCount > 0) {
+        toast({
+          title: "Import Successful",
+          description: `${successCount} machines imported successfully${errorCount > 0 ? `, ${errorCount} failed` : ''}`,
+        })
+      } else {
+        toast({
+          title: "Import Failed",
+          description: "No machines could be imported",
+          variant: "destructive",
+        })
+      }
+
+    } catch (error) {
+      console.error("Import failed:", error)
+      toast({
+        title: "Import Failed",
+        description: error instanceof Error ? error.message : "Failed to import machine data",
+        variant: "destructive",
+      })
+    } finally {
+      setIsImporting(false)
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
     }
   }
 
@@ -81,33 +236,75 @@ export default function MachineDashboard() {
       <Navbar />
       <main className="md:ml-64 pt-4 px-4">
         <div className="flex justify-between items-center mb-6">
-          <Button onClick={startNewCalculation}>
-            <Plus className="w-4 h-4 mr-2" />
-            Create New Machine
-          </Button>
-          <Button variant="outline" onClick={() => setIsCardView(!isCardView)}>
-            {isCardView ? (
-              <>
-                <Table2 className="w-4 h-4 mr-2" /> Table View
-              </>
-            ) : (
-              <>
-                <LayoutGrid className="w-4 h-4 mr-2" /> Card View
-              </>
-            )}
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={startNewCalculation}>
+              <Plus className="w-4 h-4 mr-2" />
+              Create New Machine
+            </Button>
+          </div>
+          
+          <div className="flex gap-2">
+            {/* Import/Export Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline">
+                  <FileText className="w-4 h-4 mr-2" />
+                  Backup
+                  <MoreVertical className="w-4 h-4 ml-1" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={exportMachines} disabled={machines.length === 0}>
+                  <Download className="w-4 h-4 mr-2" />
+                  Export All Machines
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleImportClick} disabled={isImporting}>
+                  <Upload className="w-4 h-4 mr-2" />
+                  {isImporting ? "Importing..." : "Import Machines"}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* View Toggle */}
+            <Button variant="outline" onClick={() => setIsCardView(!isCardView)}>
+              {isCardView ? (
+                <>
+                  <Table2 className="w-4 h-4 mr-2" /> Table View
+                </>
+              ) : (
+                <>
+                  <LayoutGrid className="w-4 h-4 mr-2" /> Card View
+                </>
+              )}
+            </Button>
+          </div>
         </div>
+
+        {/* Hidden file input for import */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".json,application/json"
+          onChange={handleFileChange}
+          className="hidden"
+        />
 
         {machines.length === 0 ? (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
               <Calculator className="w-12 h-12 text-gray-400 mb-4" />
               <h3 className="text-lg font-semibold text-gray-900 mb-2">No machines found</h3>
-              <p className="text-gray-600 mb-4">Start by creating your first machine calculation</p>
-              <Button onClick={startNewCalculation}>
-                <Plus className="w-4 h-4 mr-2" />
-                Create New Machine
-              </Button>
+              <p className="text-gray-600 mb-4">Start by creating your first machine calculation or import existing data</p>
+              <div className="flex gap-2">
+                <Button onClick={startNewCalculation}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create New Machine
+                </Button>
+                <Button variant="outline" onClick={handleImportClick} disabled={isImporting}>
+                  <Upload className="w-4 h-4 mr-2" />
+                  {isImporting ? "Importing..." : "Import Machines"}
+                </Button>
+              </div>
             </CardContent>
           </Card>
         ) : isCardView ? (
