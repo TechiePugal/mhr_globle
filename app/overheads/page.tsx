@@ -10,7 +10,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { ArrowLeft, ArrowRight, Users, Info } from "lucide-react"
 import type { MachineData } from "@/lib/firebaseService"
 import Navbar from "@/components/navbar"
-import Image from "next/image"
+import { calculateTotalCostPerHour } from "@/lib/total-cost-calculator"
+import TotalCostDisplay from "@/components/total-cost-display"
 
 export default function OverheadsPage() {
   const router = useRouter()
@@ -31,6 +32,7 @@ export default function OverheadsPage() {
   const [machineName, setMachineName] = useState("")
   const [overheadCostPerHour, setOverheadCostPerHour] = useState<number>(0)
   const [workingHoursPerDay, setWorkingHoursPerDay] = useState<number>(8)
+  const [totalCostBreakdown, setTotalCostBreakdown] = useState<any>({})
 
   useEffect(() => {
     const isLoggedIn = localStorage.getItem("isLoggedIn")
@@ -68,6 +70,24 @@ export default function OverheadsPage() {
       productionSupervisorCostPerHr + qualitySupervisorCostPerHr + engineerCostPerHr + adminCostPerHr
 
     setOverheadCostPerHour(totalOverheadCostPerHour)
+  }, [formData, workingHoursPerDay])
+
+  useEffect(() => {
+    // Calculate total cost breakdown
+    const savedData = localStorage.getItem("currentMachine")
+    let machineData = {}
+    if (savedData) {
+      machineData = JSON.parse(savedData)
+    }
+
+    // Update with current form data
+    const currentMachineData = {
+      ...machineData,
+      overheadsData: formData,
+    }
+
+    const totalCost = calculateTotalCostPerHour(currentMachineData)
+    setTotalCostBreakdown(totalCost)
   }, [formData, workingHoursPerDay])
 
   const validateForm = () => {
@@ -132,48 +152,44 @@ export default function OverheadsPage() {
     description?: string,
     min?: number,
   ) => (
-<div className="space-y-2">
-  <div className="rounded-lg overflow-hidden bg-white shadow-lg flex flex-col">
+    <div className="space-y-2">
+      <div className="rounded-lg overflow-hidden bg-white shadow-lg flex flex-col">
+        {/* Top Image Section */}
+        <div
+          className="h-48 bg-cover bg-center"
+          style={{
+            backgroundImage: `url(${imageUrl})`,
+            backgroundBlendMode: "overlay",
+            backgroundColor: "rgba(0, 0, 0, 0.6)",
+          }}
+        ></div>
 
-    {/* Top Image Section */}
-    <div
-      className="h-48 bg-cover bg-center"
-      style={{
-        backgroundImage: `url(${imageUrl})`,
-        backgroundBlendMode: "overlay",
-        backgroundColor: "rgba(0, 0, 0, 0.6)",
-      }}
-    ></div>
+        {/* Input Section */}
+        <div className="p-6 space-y-4">
+          <Label htmlFor={id} className="text-gray-900 font-semibold text-lg">
+            {label} {unit && <span className="text-yellow-600">({unit})</span>}{" "}
+            {required && <span className="text-red-600">*</span>}
+          </Label>
 
-    {/* Input Section */}
-    <div className="p-6 space-y-4">
-      <Label htmlFor={id} className="text-gray-900 font-semibold text-lg">
-        {label} {unit && <span className="text-yellow-600">({unit})</span>}{" "}
-        {required && <span className="text-red-600">*</span>}
-      </Label>
+          <Input
+            id={id}
+            type="number"
+            step="0.01"
+            min={min}
+            value={value || ""}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={placeholder}
+            className={`h-12 text-lg font-medium border text-gray-900 placeholder:text-gray-600 ${
+              error ? "border-red-400" : "border-gray-300"
+            } focus:border-blue-500 focus:ring-2 focus:ring-blue-200`}
+          />
 
-      <Input
-        id={id}
-        type="number"
-        step="0.01"
-        min={min}
-        value={value || ""}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className={`h-12 text-lg font-medium border text-gray-900 placeholder:text-gray-600 ${
-          error ? "border-red-400" : "border-gray-300"
-        } focus:border-blue-500 focus:ring-2 focus:ring-blue-200`}
-      />
+          {description && <p className="text-gray-600 text-sm">{description}</p>}
+        </div>
+      </div>
 
-      {description && (
-        <p className="text-gray-600 text-sm">{description}</p>
-      )}
+      {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
     </div>
-  </div>
-
-  {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
-</div>
-
   )
 
   const renderCalculationCard = (
@@ -227,68 +243,42 @@ export default function OverheadsPage() {
       <main className="md:ml-64 pt-4">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           {/* Header */}
-          <div className="mb-8">
-            <div className="flex items-center space-x-3 mb-4">
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Users className="w-5 h-5 text-blue-600" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Overhead Costs & Resource Allocation</h1>
-                <p className="text-gray-600">
-                  Enter overhead salaries and resource allocation for <span className="font-medium">{machineName}</span>
-                </p>
-              </div>
-            </div>
-
-  <div className="relative mb-6 rounded-lg overflow-hidden shadow-lg max-w-full h-[200px] md:h-[200px]">
-    {/* Background Image */}
-    <Image
-      src="https://buildertrend.com/wp-content/uploads/2023/03/blog-post_VF.png"
-      alt="Overhead Costs"
-      fill
-      className="object-cover w-full h-full"
-    />
-
-    {/* Overlay Content */}
-    <div className="absolute inset-0 bg-indigo-900 bg-opacity-70 p-4 md:p-6 flex flex-col justify-center">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-white text-sm md:text-base">
+<div className="sticky top-10 z-20 bg-white border-b border-gray-200">
+  <div className="px-4 py-3">
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0 sm:space-x-6">
+      {/* Icon and Text */}
+      <div className="flex items-center space-x-4">
+        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+          <Users className="w-5 h-5 text-blue-600" />
+        </div>
         <div>
-          <h3 className="text-base md:text-lg font-semibold mb-1">Overhead Cost per Hour</h3>
-          <div className="text-2xl md:text-4xl font-bold mb-1">₹{overheadCostPerHour.toFixed(2)}</div>
-          <p>per hour</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Overhead Costs & Resource Allocation</h1>
+          <p className="text-sm text-gray-600">
+            Enter overhead salaries and resource allocation for <span className="font-medium">{machineName}</span>
+          </p>
         </div>
-        <div className="space-y-1 md:space-y-2">
-          <div className="flex justify-between">
-            <span>Total Overhead Salaries:</span>
-            <span>₹{totalOverheadSalaries.toLocaleString()}/month</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Working Hours/Month:</span>
-            <span>{workingHoursPerDay * 26} hours</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Resource Efficiency:</span>
-            <span>{averageMachinesPerPerson} machines/person</span>
-          </div>
-          <div className="flex justify-between font-semibold border-t border-white/30 pt-1 mt-1">
-            <span>Allocated per Machine:</span>
-            <span>₹{overheadCostPerHour.toFixed(2)}/hour</span>
-          </div>
-        </div>
+      </div>
+
+      {/* Cost Display */}
+      <div className="w-full sm:w-auto">
+        <TotalCostDisplay
+          totalCost={totalCostBreakdown}
+          currentStep={6}
+          machineName={machineName || "Machine"}
+        />
       </div>
     </div>
   </div>
 
+  {/* Optional Alert below Header */}
+  <Alert className="bg-blue-50 border-t border-blue-200">
+    <Info className="w-4 h-4 text-blue-600" />
+    <AlertDescription className="text-blue-800">
+      This information will be used to calculate the overhead cost per machine hour based on resource allocation and management salaries.
+    </AlertDescription>
+  </Alert>
+</div>
 
-
-            <Alert className="bg-blue-50 border-blue-200">
-              <Info className="w-4 h-4 text-blue-600" />
-              <AlertDescription className="text-blue-800">
-                This information will be used to calculate the overhead cost per machine hour based on resource
-                allocation and management salaries.
-              </AlertDescription>
-            </Alert>
-          </div>
 
           <div className="space-y-8">
             {/* Management Salaries */}

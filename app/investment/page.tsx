@@ -6,13 +6,15 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowLeft, ArrowRight, Calculator, Info } from "lucide-react"
+import { ArrowLeft, ArrowRight, Calculator, Info } from 'lucide-react'
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import type { MachineData } from "@/lib/firebaseService"
 import { calculateInvestmentData } from "@/lib/calculations"
 import Navbar from "@/components/navbar"
 import Link from "next/link"
 import Image from "next/image"
+import { calculateTotalCostPerHour } from "@/lib/total-cost-calculator"
+import TotalCostDisplay from "../../components/total-cost-display"
 
 export default function InvestmentPage() {
   const router = useRouter()
@@ -28,6 +30,7 @@ export default function InvestmentPage() {
   const [calculatedData, setCalculatedData] = useState<any>({})
   const [investmentCostPerHour, setInvestmentCostPerHour] = useState<number>(0)
   const [errors, setErrors] = useState<any>({})
+  const [totalCostBreakdown, setTotalCostBreakdown] = useState<any>({})
 
   useEffect(() => {
     const isLoggedIn = localStorage.getItem("isLoggedIn")
@@ -61,6 +64,25 @@ export default function InvestmentPage() {
       setInvestmentCostPerHour(investmentCostPerHour)
     }
   }, [formData])
+
+  useEffect(() => {
+    // Calculate total cost breakdown
+    const savedData = localStorage.getItem("currentMachine")
+    let machineData = {}
+    if (savedData) {
+      machineData = JSON.parse(savedData)
+    }
+    
+    // Update with current form data
+    const currentMachineData = {
+      ...machineData,
+      machineName,
+      investmentData: { ...formData, ...calculatedData }
+    }
+    
+    const totalCost = calculateTotalCostPerHour(currentMachineData)
+    setTotalCostBreakdown(totalCost)
+  }, [formData, calculatedData, machineName])
 
   const validateForm = () => {
     const newErrors: any = {}
@@ -265,80 +287,42 @@ export default function InvestmentPage() {
       <main className="md:ml-64 pt-4">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           {/* Header */}
-          <div className="mb-8">
-            <div className="flex items-center space-x-3 mb-4">
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Calculator className="w-5 h-5 text-blue-600" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Investment Details</h1>
-                <p className="text-gray-600">Enter the basic investment information for your machine</p>
-              </div>
-            </div>
-
-            {/* Investment Cost Per Hour Display */}
-{/* Investment Cost Section */}
-<div className="relative mb-6 rounded-lg overflow-hidden shadow-lg max-w-full h-[200px] md:h-[200px]">
-  {/* Background Image */}
-  <Image
-    src="https://cdn.corporatefinanceinstitute.com/assets/income-investing-1024x576.jpeg"
-    alt="Investment Details"
-    fill
-    className="object-cover w-full h-full"
-  />
-
-  {/* Overlay Content */}
-  <div className="absolute inset-0 bg-blue-900 bg-opacity-70 p-4 md:p-6 flex flex-col justify-center">
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-white text-sm md:text-base">
-      <div>
-        <h3 className="text-base md:text-lg font-semibold mb-1">Investment Cost per Hour</h3>
-        <div className="text-2xl md:text-4xl font-bold mb-1">₹{investmentCostPerHour?.toFixed(2) || "0.00"}</div>
-        <p>per hour</p>
+<div className="sticky top-10 z-20 bg-white border-b border-gray-200">
+  <div className="px-4 py-3">
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0 sm:space-x-6">
+      {/* Icon and Text */}
+      <div className="flex items-center space-x-4">
+        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+          <Calculator className="w-5 h-5 text-blue-600" />
+        </div>
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Investment Details</h1>
+          <p className="text-sm text-gray-600">
+            Enter the basic investment information for your machine
+          </p>
+        </div>
       </div>
-      <div className="space-y-1 md:space-y-2">
-        <div className="flex justify-between">
-          <span>Annual Depreciation:</span>
-          <span>
-            ₹
-            {formData.machineCost && formData.scrapRate && formData.lifeOfMachine
-              ? (
-                  (formData.machineCost - (formData.machineCost * formData.scrapRate) / 100) /
-                  formData.lifeOfMachine
-                ).toLocaleString()
-              : "0"}
-          </span>
-        </div>
-        <div className="flex justify-between">
-          <span>Annual Interest:</span>
-          <span>
-            ₹
-            {calculatedData.currentValueOfMachine && formData.interestRate
-              ? ((calculatedData.currentValueOfMachine * formData.interestRate) / 100).toLocaleString()
-              : "0"}
-          </span>
-        </div>
-        <div className="flex justify-between font-semibold border-t border-white/30 pt-1 mt-1">
-          <span>Total Annual Cost:</span>
-          <span>
-            ₹
-            {investmentCostPerHour && formData.workingHoursPerDay
-              ? (investmentCostPerHour * formData.workingHoursPerDay * 365).toLocaleString()
-              : "0"}
-          </span>
-        </div>
+
+      {/* Total Cost Display Component */}
+      <div className="w-full sm:w-auto">
+        <TotalCostDisplay
+          totalCost={totalCostBreakdown}
+          currentStep={1}
+          machineName={machineName || "Machine"}
+        />
       </div>
     </div>
   </div>
+
+  {/* Optional Alert below Header */}
+  <Alert className="bg-blue-50 border-t border-blue-200">
+    <Info className="w-4 h-4 text-blue-600" />
+    <AlertDescription className="text-blue-800">
+      This information will be used to calculate depreciation, interest costs, and machine life hours.
+    </AlertDescription>
+  </Alert>
 </div>
 
-
-            <Alert className="bg-blue-50 border-blue-200">
-              <Info className="w-4 h-4 text-blue-600" />
-              <AlertDescription className="text-blue-800">
-                This information will be used to calculate depreciation, interest costs, and machine life hours.
-              </AlertDescription>
-            </Alert>
-          </div>
 
           <div className="space-y-8">
             {/* Basic Information */}

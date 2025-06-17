@@ -7,11 +7,11 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { ArrowLeft, ArrowRight, Building, Info } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Building, Info } from "lucide-react"
 import type { MachineData } from "@/lib/firebaseService"
 import Navbar from "@/components/navbar"
-import Link from "next/link"
-import Image from "next/image"
+import { calculateTotalCostPerHour } from "@/lib/total-cost-calculator"
+import TotalCostDisplay from "@/components/total-cost-display"
 
 export default function SpaceExpensesPage() {
   const router = useRouter()
@@ -26,6 +26,7 @@ export default function SpaceExpensesPage() {
   const [machineName, setMachineName] = useState("")
   const [spaceCostPerHour, setSpaceCostPerHour] = useState<number>(0)
   const [workingHoursPerDay, setWorkingHoursPerDay] = useState<number>(8)
+  const [totalCostBreakdown, setTotalCostBreakdown] = useState<any>({})
 
   useEffect(() => {
     const isLoggedIn = localStorage.getItem("isLoggedIn")
@@ -49,15 +50,36 @@ export default function SpaceExpensesPage() {
   useEffect(() => {
     if (formData.factoryRentPerMonth > 0 && formData.factorySpaceInSqFt > 0 && formData.spaceOccupiedByMachine > 0) {
       // Calculate space cost per hour using the same logic as calculateFinalMachineHourRate
-      const machineSpaceCost = formData.factoryRentPerMonth * 12 * (formData.spaceOccupiedByMachine / formData.factorySpaceInSqFt)
-      const commonSpaceCost = formData.numberOfMachinesInFactory > 0 
-        ? (formData.factoryRentPerMonth * 12 * (formData.commonSpaceInSqFt / formData.factorySpaceInSqFt)) / formData.numberOfMachinesInFactory
-        : 0
+      const machineSpaceCost =
+        formData.factoryRentPerMonth * 12 * (formData.spaceOccupiedByMachine / formData.factorySpaceInSqFt)
+      const commonSpaceCost =
+        formData.numberOfMachinesInFactory > 0
+          ? (formData.factoryRentPerMonth * 12 * (formData.commonSpaceInSqFt / formData.factorySpaceInSqFt)) /
+            formData.numberOfMachinesInFactory
+          : 0
       const annualSpaceCost = machineSpaceCost + commonSpaceCost
       const costPerHour = annualSpaceCost / (workingHoursPerDay * 365)
-      
+
       setSpaceCostPerHour(costPerHour)
     }
+  }, [formData, workingHoursPerDay])
+
+  useEffect(() => {
+    // Calculate total cost breakdown
+    const savedData = localStorage.getItem("currentMachine")
+    let machineData = {}
+    if (savedData) {
+      machineData = JSON.parse(savedData)
+    }
+
+    // Update with current form data
+    const currentMachineData = {
+      ...machineData,
+      spaceData: formData,
+    }
+
+    const totalCost = calculateTotalCostPerHour(currentMachineData)
+    setTotalCostBreakdown(totalCost)
   }, [formData, workingHoursPerDay])
 
   const validateForm = () => {
@@ -116,62 +138,58 @@ export default function SpaceExpensesPage() {
     placeholder: string,
     imageUrl: string,
     error?: string,
-    required: boolean = false,
-    description?: string
+    required = false,
+    description?: string,
   ) => (
-<div className="space-y-2">
-  <div className="rounded-lg overflow-hidden bg-white shadow-lg flex flex-col">
+    <div className="space-y-2">
+      <div className="rounded-lg overflow-hidden bg-white shadow-lg flex flex-col">
+        {/* Top: Image Banner */}
+        <div
+          className="h-48 bg-cover bg-center"
+          style={{
+            backgroundImage: `url(${imageUrl})`,
+            backgroundBlendMode: "overlay",
+            backgroundColor: "rgba(0, 0, 0, 0.6)",
+          }}
+        ></div>
 
-    {/* Top: Image Banner */}
-    <div
-      className="h-48 bg-cover bg-center"
-      style={{
-        backgroundImage: `url(${imageUrl})`,
-        backgroundBlendMode: "overlay",
-        backgroundColor: "rgba(0, 0, 0, 0.6)",
-      }}
-    ></div>
+        {/* Bottom: Form Section */}
+        <div className="p-6 space-y-4">
+          <Label htmlFor={id} className="text-gray-900 font-semibold text-lg">
+            {label} {required && <span className="text-red-600">*</span>}
+          </Label>
 
-    {/* Bottom: Form Section */}
-    <div className="p-6 space-y-4">
-      <Label htmlFor={id} className="text-gray-900 font-semibold text-lg">
-        {label} {required && <span className="text-red-600">*</span>}
-      </Label>
+          <Input
+            id={id}
+            type="number"
+            value={value || ""}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={placeholder}
+            className={`h-12 text-lg font-medium bg-white border ${
+              error ? "border-red-400" : "border-gray-300"
+            } text-gray-900 placeholder:text-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-200`}
+          />
 
-      <Input
-        id={id}
-        type="number"
-        value={value || ""}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className={`h-12 text-lg font-medium bg-white border ${
-          error ? "border-red-400" : "border-gray-300"
-        } text-gray-900 placeholder:text-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-200`}
-      />
+          {description && <p className="text-gray-600 text-sm">{description}</p>}
+        </div>
+      </div>
 
-      {description && (
-        <p className="text-gray-600 text-sm">{description}</p>
-      )}
+      {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
     </div>
-  </div>
-
-  {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
-</div>
-
   )
 
-  const renderCalculationCard = (title: string, value: number, imageUrl: string, colorScheme: string = "blue") => {
+  const renderCalculationCard = (title: string, value: number, imageUrl: string, colorScheme = "blue") => {
     const colorClasses = {
       green: {
         text: "text-green-800",
         valueText: "text-green-900",
-        subText: "text-green-600"
+        subText: "text-green-600",
       },
       blue: {
-        text: "text-blue-800", 
+        text: "text-blue-800",
         valueText: "text-blue-900",
-        subText: "text-blue-600"
-      }
+        subText: "text-blue-600",
+      },
     }
 
     const colors = colorClasses[colorScheme as keyof typeof colorClasses] || colorClasses.blue
@@ -187,9 +205,7 @@ export default function SpaceExpensesPage() {
       >
         <div className="space-y-2">
           <div className="text-white font-medium text-lg">{title}</div>
-          <div className="text-3xl font-bold text-white">
-            ₹{value.toLocaleString()}
-          </div>
+          <div className="text-3xl font-bold text-white">₹{value.toLocaleString()}</div>
           <div className="text-white/80 text-sm">Per month</div>
         </div>
       </div>
@@ -203,67 +219,41 @@ export default function SpaceExpensesPage() {
       <main className="md:ml-64 pt-4">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           {/* Header */}
-          <div className="mb-8">
-            <div className="flex items-center space-x-3 mb-4">
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Building className="w-5 h-5 text-blue-600" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Space Expenses</h1>
-                <p className="text-gray-600">
-                  Enter factory space details for <span className="font-medium">{machineName}</span>
-                </p>
-              </div>
-            </div>
-
-            {/* Space Cost Per Hour Display */}
-
-  <div className="relative mb-6 rounded-lg overflow-hidden shadow-lg max-w-full h-[200px] md:h-[200px]">
-    {/* Background Image */}
-    <Image
-      src="https://estimatorflorida.com/wp-content/uploads/2022/04/cost-to-build-a-warehouse.jpg"
-      alt="Factory Warehouse"
-      fill
-      className="object-cover w-full h-full"
-    />
-
-    {/* Overlay Content */}
-    <div className="absolute inset-0 bg-green-900 bg-opacity-70 p-4 md:p-6 flex flex-col justify-center">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-white text-sm md:text-base">
+<div className="sticky top-10 z-20 bg-white border-b border-gray-200">
+  <div className="px-4 py-3">
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0 sm:space-x-6">
+      {/* Icon and Text */}
+      <div className="flex items-center space-x-4">
+        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+          <Building className="w-5 h-5 text-blue-600" />
+        </div>
         <div>
-          <h3 className="text-base md:text-lg font-semibold mb-1">Space Cost per Hour</h3>
-          <div className="text-2xl md:text-4xl font-bold mb-1">₹{spaceCostPerHour.toFixed(2)}</div>
-          <p>per hour</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Space Expenses</h1>
+          <p className="text-sm text-gray-600">
+            Enter factory space details for <span className="font-medium">{machineName}</span>
+          </p>
         </div>
-        <div className="space-y-1 md:space-y-2">
-          <div className="flex justify-between">
-            <span>Machine Space Cost:</span>
-            <span>₹{((formData.factoryRentPerMonth * 12 * (formData.spaceOccupiedByMachine / formData.factorySpaceInSqFt)) / 12).toLocaleString()}/month</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Common Space Cost:</span>
-            <span>₹{(formData.numberOfMachinesInFactory > 0
-              ? ((formData.factoryRentPerMonth * 12 * (formData.commonSpaceInSqFt / formData.factorySpaceInSqFt)) / formData.numberOfMachinesInFactory / 12)
-              : 0).toLocaleString()}/month</span>
-          </div>
-          <div className="flex justify-between font-semibold border-t border-white/30 pt-1 mt-1">
-            <span>Total Annual Cost:</span>
-            <span>₹{(spaceCostPerHour * workingHoursPerDay * 365).toLocaleString()}</span>
-          </div>
-        </div>
+      </div>
+
+      {/* Space Cost Per Hour Display */}
+      <div className="w-full sm:w-auto">
+        <TotalCostDisplay
+          totalCost={totalCostBreakdown}
+          currentStep={2}
+          machineName={machineName || "Machine"}
+        />
       </div>
     </div>
   </div>
 
-
-
-            <Alert className="bg-blue-50 border-blue-200">
-              <Info className="w-4 h-4 text-blue-600" />
-              <AlertDescription className="text-blue-800">
-                This information will be used to calculate the space cost per hour for your machine.
-              </AlertDescription>
-            </Alert>
-          </div>
+  {/* Optional Alert below Header */}
+  <Alert className="bg-blue-50 border-t border-blue-200">
+    <Info className="w-4 h-4 text-blue-600" />
+    <AlertDescription className="text-blue-800">
+      This information will be used to calculate the space cost per hour for your machine.
+    </AlertDescription>
+  </Alert>
+</div>
 
           <div className="space-y-8">
             {/* Factory Space Information */}
@@ -282,7 +272,7 @@ export default function SpaceExpensesPage() {
                     "e.g., 50000",
                     "https://www.wsm.eu/wp-content/uploads/2023/05/raumsystem-im-innenbereich-2.jpg",
                     errors.factoryRentPerMonth,
-                    true
+                    true,
                   )}
 
                   {renderInputWithBackgroundImage(
@@ -293,7 +283,7 @@ export default function SpaceExpensesPage() {
                     "e.g., 2000",
                     "https://5.imimg.com/data5/SELLER/Default/2024/2/388164104/RD/JF/CG/205690783/80-000-sqft-warehouse-gowdown-for-rent-lease-at-kompally-hyderabad-tg.jpg",
                     errors.factorySpaceInSqFt,
-                    true
+                    true,
                   )}
                 </div>
               </CardContent>
@@ -315,7 +305,7 @@ export default function SpaceExpensesPage() {
                     "e.g., 100",
                     "https://www.machinemetrics.com/hs-fs/hubfs/fanuc-robots-factory.jpg?width=918&name=fanuc-robots-factory.jpg",
                     errors.spaceOccupiedByMachine,
-                    true
+                    true,
                   )}
 
                   {renderInputWithBackgroundImage(
@@ -326,7 +316,7 @@ export default function SpaceExpensesPage() {
                     "e.g., 5",
                     "https://cdn.britannica.com/17/197117-050-E0626858/Rows-computer-numerical-control-milling-machines-factory.jpg",
                     errors.numberOfMachinesInFactory,
-                    true
+                    true,
                   )}
 
                   {renderInputWithBackgroundImage(
@@ -338,7 +328,7 @@ export default function SpaceExpensesPage() {
                     "https://www.dgicommunications.com/wp-content/uploads/2021/10/dgi-office-space-design.jpg",
                     undefined,
                     false,
-                    "Common space includes walkways, storage areas, and other shared spaces"
+                    "Common space includes walkways, storage areas, and other shared spaces",
                   )}
                 </div>
               </CardContent>
@@ -357,16 +347,21 @@ export default function SpaceExpensesPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {renderCalculationCard(
                       "Rent per sq ft",
-                      parseFloat((formData.factoryRentPerMonth / formData.factorySpaceInSqFt).toFixed(2)),
+                      Number.parseFloat((formData.factoryRentPerMonth / formData.factorySpaceInSqFt).toFixed(2)),
                       "https://5.imimg.com/data5/SELLER/Default/2024/2/388164104/RD/JF/CG/205690783/80-000-sqft-warehouse-gowdown-for-rent-lease-at-kompally-hyderabad-tg.jpg",
-                      "green"
+                      "green",
                     )}
 
                     {renderCalculationCard(
                       "Machine Space Cost",
-                      parseFloat(((formData.factoryRentPerMonth / formData.factorySpaceInSqFt) * formData.spaceOccupiedByMachine).toFixed(2)),
+                      Number.parseFloat(
+                        (
+                          (formData.factoryRentPerMonth / formData.factorySpaceInSqFt) *
+                          formData.spaceOccupiedByMachine
+                        ).toFixed(2),
+                      ),
                       "https://d3h6k4kfl8m9p0.cloudfront.net/uploads/2014/03/Amy-Shop-from-Top.jpg",
-                      "blue"
+                      "blue",
                     )}
                   </div>
                 </CardContent>

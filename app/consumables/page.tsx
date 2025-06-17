@@ -7,10 +7,11 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { ArrowLeft, ArrowRight, Package, Info } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Package, Info } from "lucide-react"
 import type { MachineData } from "@/lib/firebaseService"
 import Navbar from "@/components/navbar"
-import Image from "next/image"
+import { calculateTotalCostPerHour } from "@/lib/total-cost-calculator"
+import TotalCostDisplay from "@/components/total-cost-display"
 
 export default function ConsumablesPage() {
   const router = useRouter()
@@ -27,6 +28,7 @@ export default function ConsumablesPage() {
   const [machineName, setMachineName] = useState("")
   const [consumablesCostPerHour, setConsumablesCostPerHour] = useState<number>(0)
   const [workingHoursPerDay, setWorkingHoursPerDay] = useState<number>(8)
+  const [totalCostBreakdown, setTotalCostBreakdown] = useState<any>({})
 
   useEffect(() => {
     const isLoggedIn = localStorage.getItem("isLoggedIn")
@@ -51,10 +53,33 @@ export default function ConsumablesPage() {
     // Calculate consumables cost per hour using the same logic as calculateFinalMachineHourRate
     const monthlyCoolantCost = formData.coolantOilTopUpPerMonth * formData.coolantOilCostPerLitre
     const monthlyWasteCost = formData.wasteUsagePerMonth * formData.costOfWastePerKg
-    const totalMonthlyConsumablesCost = monthlyCoolantCost + monthlyWasteCost + formData.monthlyMaintenanceCost + formData.otherConsumablesPerMonth + (formData.annualMaintenanceCost / 12)
+    const totalMonthlyConsumablesCost =
+      monthlyCoolantCost +
+      monthlyWasteCost +
+      formData.monthlyMaintenanceCost +
+      formData.otherConsumablesPerMonth +
+      formData.annualMaintenanceCost / 12
     const costPerHour = totalMonthlyConsumablesCost / (workingHoursPerDay * 26) // 26 working days per month
 
     setConsumablesCostPerHour(costPerHour)
+  }, [formData, workingHoursPerDay])
+
+  useEffect(() => {
+    // Calculate total cost breakdown
+    const savedData = localStorage.getItem("currentMachine")
+    let machineData = {}
+    if (savedData) {
+      machineData = JSON.parse(savedData)
+    }
+
+    // Update with current form data
+    const currentMachineData = {
+      ...machineData,
+      consumablesData: formData,
+    }
+
+    const totalCost = calculateTotalCostPerHour(currentMachineData)
+    setTotalCostBreakdown(totalCost)
   }, [formData, workingHoursPerDay])
 
   const validateForm = () => {
@@ -100,51 +125,53 @@ export default function ConsumablesPage() {
     imageUrl: string,
     unit: string,
     error?: string,
-    required: boolean = false,
-    description?: string
+    required = false,
+    description?: string,
   ) => (
-<div className="space-y-2">
-  <div className="rounded-lg overflow-hidden bg-white shadow-lg flex flex-col">
+    <div className="space-y-2">
+      <div className="rounded-lg overflow-hidden bg-white shadow-lg flex flex-col">
+        {/* Top: Image Banner */}
+        <div
+          className="h-48 bg-cover bg-center"
+          style={{
+            backgroundImage: `url(${imageUrl})`,
+            backgroundBlendMode: "overlay",
+            backgroundColor: "rgba(0, 0, 0, 0.6)",
+          }}
+        ></div>
 
-    {/* Top: Image Banner */}
-    <div
-      className="h-48 bg-cover bg-center"
-      style={{
-        backgroundImage: `url(${imageUrl})`,
-        backgroundBlendMode: "overlay",
-        backgroundColor: "rgba(0, 0, 0, 0.6)",
-      }}
-    ></div>
+        {/* Bottom: Form Section */}
+        <div className="p-6 space-y-4">
+          <Label htmlFor={id} className="text-gray-900 font-semibold text-lg">
+            {label} {required && <span className="text-red-600">*</span>}
+          </Label>
 
-    {/* Bottom: Form Section */}
-    <div className="p-6 space-y-4">
-      <Label htmlFor={id} className="text-gray-900 font-semibold text-lg">
-        {label} {required && <span className="text-red-600">*</span>}
-      </Label>
+          <Input
+            id={id}
+            type="number"
+            value={value || ""}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={placeholder}
+            className={`h-12 text-lg font-medium bg-white border ${
+              error ? "border-red-400" : "border-gray-300"
+            } text-gray-900 placeholder:text-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-200`}
+          />
 
-      <Input
-        id={id}
-        type="number"
-        value={value || ""}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className={`h-12 text-lg font-medium bg-white border ${
-          error ? "border-red-400" : "border-gray-300"
-        } text-gray-900 placeholder:text-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-200`}
-      />
+          {description && <p className="text-gray-600 text-sm">{description}</p>}
+        </div>
+      </div>
 
-      {description && (
-        <p className="text-gray-600 text-sm">{description}</p>
-      )}
+      {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
     </div>
-  </div>
-
-  {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
-</div>
-
   )
 
-  const renderCalculationCard = (title: string, value: number, unit: string, imageUrl: string, colorScheme: string = "blue") => {
+  const renderCalculationCard = (
+    title: string,
+    value: number,
+    unit: string,
+    imageUrl: string,
+    colorScheme = "blue",
+  ) => {
     return (
       <div
         className="relative p-6 bg-cover bg-center text-white rounded-lg min-h-[200px] flex flex-col justify-end"
@@ -156,9 +183,7 @@ export default function ConsumablesPage() {
       >
         <div className="space-y-2">
           <div className="text-white font-medium text-lg">{title}</div>
-          <div className="text-3xl font-bold text-white">
-            ₹{value.toFixed(2)}
-          </div>
+          <div className="text-3xl font-bold text-white">₹{value.toFixed(2)}</div>
           <div className="text-white/80 text-sm">{unit}</div>
         </div>
       </div>
@@ -183,69 +208,42 @@ export default function ConsumablesPage() {
       <main className="md:ml-64 pt-4">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           {/* Header */}
-          <div className="mb-8">
-            <div className="flex items-center space-x-3 mb-4">
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Package className="w-5 h-5 text-blue-600" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Consumables & Maintenance</h1>
-                <p className="text-gray-600">
-                  Enter consumables and maintenance costs for <span className="font-medium">{machineName}</span>
-                </p>
-              </div>
-            </div>
-
-            {/* Consumables Cost Per Hour Display */}
-
-  <div className="relative mb-6 rounded-lg overflow-hidden shadow-lg max-w-full h-[200px] md:h-[200px]">
-    {/* Background Image */}
-    <Image
-      src="https://padia.org/wp-content/uploads/2023/10/Industrial-Consumables-Sales.jpg"
-      alt="Industrial Consumables"
-      fill
-      className="object-cover w-full h-full"
-    />
-
-    {/* Overlay Content */}
-    <div className="absolute inset-0 bg-purple-900 bg-opacity-70 p-4 md:p-6 flex flex-col justify-center">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-white text-sm md:text-base">
+<div className="sticky top-10 z-20 bg-white border-b border-gray-200">
+  <div className="px-4 py-3">
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0 sm:space-x-6">
+      {/* Icon and Text */}
+      <div className="flex items-center space-x-4">
+        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+          <Package className="w-5 h-5 text-blue-600" />
+        </div>
         <div>
-          <h3 className="text-base md:text-lg font-semibold mb-1">Consumables Cost per Hour</h3>
-          <div className="text-2xl md:text-4xl font-bold mb-1">₹{consumablesCostPerHour.toFixed(2)}</div>
-          <p>per hour</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Consumables & Maintenance</h1>
+          <p className="text-sm text-gray-600">
+            Enter consumables and maintenance costs for <span className="font-medium">{machineName}</span>
+          </p>
         </div>
-        <div className="space-y-1 md:space-y-2">
-          <div className="flex justify-between">
-            <span>Coolant Cost:</span>
-            <span>₹{coolantCost?.toLocaleString() || "0"}/month</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Waste Cost:</span>
-            <span>₹{wasteCost?.toLocaleString() || "0"}/month</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Maintenance Cost:</span>
-            <span>₹{(formData.monthlyMaintenanceCost + annualMaintenanceCostPerMonth).toLocaleString()}/month</span>
-          </div>
-          <div className="flex justify-between font-semibold border-t border-white/30 pt-1 mt-1">
-            <span>Total Monthly Cost:</span>
-            <span>₹{totalMonthlyCost?.toLocaleString() || "0"}</span>
-          </div>
-        </div>
+      </div>
+
+      {/* Cost Display */}
+      <div className="w-full sm:w-auto">
+        <TotalCostDisplay
+          totalCost={totalCostBreakdown}
+          currentStep={4}
+          machineName={machineName || "Machine"}
+        />
       </div>
     </div>
   </div>
 
+  {/* Optional Alert below Header */}
+  <Alert className="bg-blue-50 border-t border-blue-200">
+    <Info className="w-4 h-4 text-blue-600" />
+    <AlertDescription className="text-blue-800">
+      This information will be used to calculate the consumables and maintenance cost per hour for your machine.
+    </AlertDescription>
+  </Alert>
+</div>
 
-
-            <Alert className="bg-blue-50 border-blue-200">
-              <Info className="w-4 h-4 text-blue-600" />
-              <AlertDescription className="text-blue-800">
-                This information will be used to calculate the consumables and maintenance cost per hour for your machine.
-              </AlertDescription>
-            </Alert>
-          </div>
 
           <div className="space-y-8">
             {/* Coolant & Waste */}
@@ -263,7 +261,7 @@ export default function ConsumablesPage() {
                     (value) => handleInputChange("coolantOilTopUpPerMonth", value),
                     "e.g., 5",
                     "https://www.shutterstock.com/shutterstock/videos/3678613201/thumb/1.jpg?ip=x480",
-                    "litres"
+                    "litres",
                   )}
 
                   {renderInputWithBackgroundImage(
@@ -273,7 +271,7 @@ export default function ConsumablesPage() {
                     (value) => handleInputChange("coolantOilCostPerLitre", value),
                     "e.g., 250",
                     "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTBmJz4oZO2jzob9D__mtm8wrjfPzJWDFY_UAHaXyGGOir2NMoR2UkAEYy5FbAFcI56RII&usqp=CAU",
-                    "₹"
+                    "₹",
                   )}
 
                   {renderInputWithBackgroundImage(
@@ -283,7 +281,7 @@ export default function ConsumablesPage() {
                     (value) => handleInputChange("wasteUsagePerMonth", value),
                     "e.g., 2",
                     "https://t3.ftcdn.net/jpg/10/04/22/34/360_F_1004223473_DPNanYErcQOwxy8IPZgU9yfcUcSjEAdA.jpg",
-                    "kg"
+                    "kg",
                   )}
 
                   {renderInputWithBackgroundImage(
@@ -293,7 +291,7 @@ export default function ConsumablesPage() {
                     (value) => handleInputChange("costOfWastePerKg", value),
                     "e.g., 50",
                     "https://revnew.com/hubfs/cost-revenue-ratio.jpg",
-                    "₹"
+                    "₹",
                   )}
                 </div>
               </CardContent>
@@ -314,7 +312,7 @@ export default function ConsumablesPage() {
                     (value) => handleInputChange("monthlyMaintenanceCost", value),
                     "e.g., 2000",
                     "https://assets-news.housing.com/news/wp-content/uploads/2017/06/25095820/Maintenance-charges-that-buyers-need-to-be-aware-of-FB-1200x700-compressed.jpg",
-                    "₹"
+                    "₹",
                   )}
 
                   {renderInputWithBackgroundImage(
@@ -324,7 +322,7 @@ export default function ConsumablesPage() {
                     (value) => handleInputChange("annualMaintenanceCost", value),
                     "e.g., 24000",
                     "https://antmyerp.com/wp-content/uploads/2021/12/AMC-Management-Software.webp",
-                    "₹"
+                    "₹",
                   )}
 
                   {renderInputWithBackgroundImage(
@@ -337,7 +335,7 @@ export default function ConsumablesPage() {
                     "₹",
                     undefined,
                     false,
-                    "Include other consumables like cutting tools, lubricants, etc."
+                    "Include other consumables like cutting tools, lubricants, etc.",
                   )}
                 </div>
               </CardContent>
@@ -354,36 +352,39 @@ export default function ConsumablesPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {coolantCost > 0 && renderCalculationCard(
-                      "Coolant Cost",
-                      coolantCost,
-                      "Per month",
-                      "https://cdn-icons-png.flaticon.com/512/7751/7751861.png",
-                      "green"
-                    )}
+                    {coolantCost > 0 &&
+                      renderCalculationCard(
+                        "Coolant Cost",
+                        coolantCost,
+                        "Per month",
+                        "https://cdn-icons-png.flaticon.com/512/7751/7751861.png",
+                        "green",
+                      )}
 
-                    {wasteCost > 0 && renderCalculationCard(
-                      "Waste Cost",
-                      wasteCost,
-                      "Per month",
-                      "https://cdn-icons-png.flaticon.com/512/9028/9028526.png",
-                      "green"
-                    )}
+                    {wasteCost > 0 &&
+                      renderCalculationCard(
+                        "Waste Cost",
+                        wasteCost,
+                        "Per month",
+                        "https://cdn-icons-png.flaticon.com/512/9028/9028526.png",
+                        "green",
+                      )}
 
-                    {(formData.monthlyMaintenanceCost + annualMaintenanceCostPerMonth) > 0 && renderCalculationCard(
-                      "Maintenance Cost",
-                      formData.monthlyMaintenanceCost + annualMaintenanceCostPerMonth,
-                      "Per month",
-                      "https://www.scnsoft.com/blog-pictures/crm-pics/customer-service-costs.png",
-                      "blue"
-                    )}
+                    {formData.monthlyMaintenanceCost + annualMaintenanceCostPerMonth > 0 &&
+                      renderCalculationCard(
+                        "Maintenance Cost",
+                        formData.monthlyMaintenanceCost + annualMaintenanceCostPerMonth,
+                        "Per month",
+                        "https://www.scnsoft.com/blog-pictures/crm-pics/customer-service-costs.png",
+                        "blue",
+                      )}
 
                     {renderCalculationCard(
                       "Total Cost",
                       totalMonthlyCost,
                       "Per month",
                       "https://cdn-icons-png.flaticon.com/512/3191/3191648.png",
-                      "blue"
+                      "blue",
                     )}
                   </div>
                 </CardContent>

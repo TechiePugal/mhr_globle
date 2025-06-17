@@ -7,11 +7,12 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { ArrowLeft, ArrowRight, Zap, Info } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Zap, Info } from "lucide-react"
 import type { MachineData } from "@/lib/firebaseService"
 import { calculatePowerData } from "@/lib/calculations"
 import Navbar from "@/components/navbar"
-import Image from "next/image"
+import { calculateTotalCostPerHour } from "@/lib/total-cost-calculator"
+import TotalCostDisplay from "@/components/total-cost-display"
 
 export default function PowerConsumptionPage() {
   const router = useRouter()
@@ -37,6 +38,7 @@ export default function PowerConsumptionPage() {
   const [machineName, setMachineName] = useState("")
   const [calculatedData, setCalculatedData] = useState<any>({})
   const [powerCostPerHour, setPowerCostPerHour] = useState<number>(0)
+  const [totalCostBreakdown, setTotalCostBreakdown] = useState<any>({})
 
   useEffect(() => {
     const isLoggedIn = localStorage.getItem("isLoggedIn")
@@ -63,21 +65,52 @@ export default function PowerConsumptionPage() {
     }
 
     // Calculate power cost per hour using the same logic as calculateFinalMachineHourRate
-    if (formData.machinePower > 0 && formData.effectiveRunningTimeOfMotors > 0 && formData.utilization > 0 && formData.electricityUnitRate > 0) {
+    if (
+      formData.machinePower > 0 &&
+      formData.effectiveRunningTimeOfMotors > 0 &&
+      formData.utilization > 0 &&
+      formData.electricityUnitRate > 0
+    ) {
       const motorPowerConsumption = (formData.machinePower * formData.effectiveRunningTimeOfMotors) / 100
       const fanPowerConsumption = (formData.powerOfFan * formData.numberOfFansAroundMachine) / 1000
       const lightPowerConsumption = (formData.powerOfLight * formData.numberOfLightsAroundMachine) / 1000
-      const compressorPowerConsumption = formData.numberOfMachinesConnectedWithCompressor > 0 
-        ? (formData.compressorPower * formData.effectiveRunningTimeOfCompressor) / 100 / formData.numberOfMachinesConnectedWithCompressor
-        : 0
+      const compressorPowerConsumption =
+        formData.numberOfMachinesConnectedWithCompressor > 0
+          ? (formData.compressorPower * formData.effectiveRunningTimeOfCompressor) /
+            100 /
+            formData.numberOfMachinesConnectedWithCompressor
+          : 0
       const otherEquipmentPowerConsumption = formData.powerOfOtherElectricalEquipment / 1000
 
-      const totalPowerConsumption = motorPowerConsumption + fanPowerConsumption + lightPowerConsumption + compressorPowerConsumption + otherEquipmentPowerConsumption
+      const totalPowerConsumption =
+        motorPowerConsumption +
+        fanPowerConsumption +
+        lightPowerConsumption +
+        compressorPowerConsumption +
+        otherEquipmentPowerConsumption
       const costPerHour = (totalPowerConsumption * formData.electricityUnitRate * formData.utilization) / 100
 
       setPowerCostPerHour(costPerHour)
     }
   }, [formData])
+
+  useEffect(() => {
+    // Calculate total cost breakdown
+    const savedData = localStorage.getItem("currentMachine")
+    let machineData = {}
+    if (savedData) {
+      machineData = JSON.parse(savedData)
+    }
+
+    // Update with current form data
+    const currentMachineData = {
+      ...machineData,
+      powerData: { ...formData, ...calculatedData },
+    }
+
+    const totalCost = calculateTotalCostPerHour(currentMachineData)
+    setTotalCostBreakdown(totalCost)
+  }, [formData, calculatedData])
 
   const validateForm = () => {
     const newErrors: any = {}
@@ -131,53 +164,55 @@ export default function PowerConsumptionPage() {
     imageUrl: string,
     unit: string,
     error?: string,
-    required: boolean = false,
-    description?: string
+    required = false,
+    description?: string,
   ) => (
-<div className="space-y-2">
-  <div className="rounded-lg overflow-hidden bg-white shadow-lg flex flex-col">
+    <div className="space-y-2">
+      <div className="rounded-lg overflow-hidden bg-white shadow-lg flex flex-col">
+        {/* Top: Image Banner */}
+        <div
+          className="h-48 bg-cover bg-center"
+          style={{
+            backgroundImage: `url(${imageUrl})`,
+            backgroundBlendMode: "overlay",
+            backgroundColor: "rgba(0, 0, 0, 0.6)",
+          }}
+        ></div>
 
-    {/* Top: Image Banner */}
-    <div
-      className="h-48 bg-cover bg-center"
-      style={{
-        backgroundImage: `url(${imageUrl})`,
-        backgroundBlendMode: "overlay",
-        backgroundColor: "rgba(0, 0, 0, 0.6)",
-      }}
-    ></div>
+        {/* Bottom: Input Section */}
+        <div className="p-6 space-y-4">
+          <Label htmlFor={id} className="text-gray-900 font-semibold text-lg">
+            {label} {unit && <span className="text-yellow-600">({unit})</span>}{" "}
+            {required && <span className="text-red-600">*</span>}
+          </Label>
 
-    {/* Bottom: Input Section */}
-    <div className="p-6 space-y-4">
-      <Label htmlFor={id} className="text-gray-900 font-semibold text-lg">
-        {label} {unit && <span className="text-yellow-600">({unit})</span>}{" "}
-        {required && <span className="text-red-600">*</span>}
-      </Label>
+          <Input
+            id={id}
+            type="number"
+            step="0.01"
+            value={value || ""}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={placeholder}
+            className={`h-12 text-lg font-medium bg-white border ${
+              error ? "border-red-400" : "border-gray-300"
+            } text-gray-900 placeholder:text-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-200`}
+          />
 
-      <Input
-        id={id}
-        type="number"
-        step="0.01"
-        value={value || ""}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className={`h-12 text-lg font-medium bg-white border ${
-          error ? "border-red-400" : "border-gray-300"
-        } text-gray-900 placeholder:text-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-200`}
-      />
+          {description && <p className="text-gray-600 text-sm">{description}</p>}
+        </div>
+      </div>
 
-      {description && (
-        <p className="text-gray-600 text-sm">{description}</p>
-      )}
+      {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
     </div>
-  </div>
-
-  {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
-</div>
-
   )
 
-  const renderCalculationCard = (title: string, value: number, unit: string, imageUrl: string, colorScheme: string = "blue") => {
+  const renderCalculationCard = (
+    title: string,
+    value: number,
+    unit: string,
+    imageUrl: string,
+    colorScheme = "blue",
+  ) => {
     return (
       <div
         className="relative p-6 bg-cover bg-center text-white rounded-lg min-h-[200px] flex flex-col justify-end"
@@ -189,9 +224,7 @@ export default function PowerConsumptionPage() {
       >
         <div className="space-y-2">
           <div className="text-white font-medium text-lg">{title}</div>
-          <div className="text-3xl font-bold text-white">
-            ₹{value.toFixed(2)}
-          </div>
+          <div className="text-3xl font-bold text-white">₹{value.toFixed(2)}</div>
           <div className="text-white/80 text-sm">{unit}</div>
         </div>
       </div>
@@ -205,69 +238,41 @@ export default function PowerConsumptionPage() {
       <main className="md:ml-64 pt-4">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           {/* Header */}
-          <div className="mb-8">
-            <div className="flex items-center space-x-3 mb-4">
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Zap className="w-5 h-5 text-blue-600" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Power Consumption</h1>
-                <p className="text-gray-600">
-                  Enter power consumption details for <span className="font-medium">{machineName}</span>
-                </p>
-              </div>
-            </div>
-
-            {/* Power Cost Per Hour Display */}
-
-  <div className="relative mb-6 rounded-lg overflow-hidden shadow-lg max-w-full h-[200px] md:h-[200px]">
-    {/* Background Image */}
-    <Image
-      src="https://m.economictimes.com/thumb/msid-112197120,width-1600,height-900,resizemode-4,imgsize-81962/peak-power-demand.jpg"
-      alt="Power Consumption"
-      fill
-      className="object-cover w-full h-full"
-    />
-
-    {/* Overlay Content */}
-    <div className="absolute inset-0 bg-yellow-900 bg-opacity-70 p-4 md:p-6 flex flex-col justify-center">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-white text-sm md:text-base">
+<div className="sticky top-10 z-20 bg-white border-b border-gray-200">
+  <div className="px-4 py-3">
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0 sm:space-x-6">
+      {/* Icon and Text */}
+      <div className="flex items-center space-x-4">
+        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+          <Zap className="w-5 h-5 text-blue-600" />
+        </div>
         <div>
-          <h3 className="text-base md:text-lg font-semibold mb-1">Power Cost per Hour</h3>
-          <div className="text-2xl md:text-4xl font-bold mb-1">₹{powerCostPerHour.toFixed(2)}</div>
-          <p>per hour</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Power Consumption</h1>
+          <p className="text-sm text-gray-600">
+            Enter power consumption details for <span className="font-medium">{machineName}</span>
+          </p>
         </div>
-        <div className="space-y-1 md:space-y-2">
-          <div className="flex justify-between">
-            <span>Motor Power:</span>
-            <span>{((formData.machinePower * formData.effectiveRunningTimeOfMotors) / 100).toFixed(2)} kW</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Auxiliary Equipment:</span>
-            <span>{(((formData.powerOfFan * formData.numberOfFansAroundMachine) + (formData.powerOfLight * formData.numberOfLightsAroundMachine) + formData.powerOfOtherElectricalEquipment) / 1000).toFixed(2)} kW</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Electricity Rate:</span>
-            <span>₹{formData.electricityUnitRate}/kWh</span>
-          </div>
-          <div className="flex justify-between font-semibold border-t border-white/30 pt-1 mt-1">
-            <span>Utilization:</span>
-            <span>{formData.utilization}%</span>
-          </div>
-        </div>
+      </div>
+
+      {/* Power Cost Display */}
+      <div className="w-full sm:w-auto">
+        <TotalCostDisplay
+          totalCost={totalCostBreakdown}
+          currentStep={3}
+          machineName={machineName || "Machine"}
+        />
       </div>
     </div>
   </div>
 
-
-
-            <Alert className="bg-blue-50 border-blue-200">
-              <Info className="w-4 h-4 text-blue-600" />
-              <AlertDescription className="text-blue-800">
-                This information will be used to calculate the power cost per hour for your machine.
-              </AlertDescription>
-            </Alert>
-          </div>
+  {/* Optional Alert below Header */}
+  <Alert className="bg-blue-50 border-t border-blue-200">
+    <Info className="w-4 h-4 text-blue-600" />
+    <AlertDescription className="text-blue-800">
+      This information will be used to calculate the power cost per hour for your machine.
+    </AlertDescription>
+  </Alert>
+</div>
 
           <div className="space-y-8">
             {/* Machine Power Information */}
@@ -287,7 +292,7 @@ export default function PowerConsumptionPage() {
                     "https://electricityplans.com/wp-content/uploads/2017/04/kWh-Kilowatt-hour-definition-meaning.jpg",
                     "kW",
                     errors.machinePower,
-                    true
+                    true,
                   )}
 
                   {renderInputWithBackgroundImage(
@@ -299,7 +304,7 @@ export default function PowerConsumptionPage() {
                     "https://sparkycalc.com/wp-content/uploads/elementor/thumbs/Untitled-design-2023-09-22T231441.225-qcsem5lsuspp5ot6884d2buk417p45jxuabqx9tb1s.png",
                     "%",
                     errors.effectiveRunningTimeOfMotors,
-                    true
+                    true,
                   )}
 
                   {renderInputWithBackgroundImage(
@@ -311,7 +316,7 @@ export default function PowerConsumptionPage() {
                     "https://rockwellautomation.scene7.com/is/image/rockwellautomation/16x9-falcon-group-shop-floor-IMG_6490.2400.jpg",
                     "%",
                     errors.utilization,
-                    true
+                    true,
                   )}
 
                   {renderInputWithBackgroundImage(
@@ -323,7 +328,7 @@ export default function PowerConsumptionPage() {
                     "https://group.met.com/media/omvoe0f3/electricity.jpg?anchor=center&mode=crop&width=1920&rnd=133293326643000000&mode=max&upscale=false",
                     "₹/kWh",
                     errors.electricityUnitRate,
-                    true
+                    true,
                   )}
                 </div>
               </CardContent>
@@ -344,7 +349,7 @@ export default function PowerConsumptionPage() {
                     (value) => handleInputChange("powerOfFan", value),
                     "e.g., 60",
                     "https://bigassfans.com/wp-content/uploads/2024/07/big-warehouse-fans-powerfoilx.jpg",
-                    "W"
+                    "W",
                   )}
 
                   {renderInputWithBackgroundImage(
@@ -354,7 +359,7 @@ export default function PowerConsumptionPage() {
                     (value) => handleInputChange("numberOfFansAroundMachine", value),
                     "e.g., 2",
                     "https://bigassfans.com/wp-content/uploads/2024/07/big-warehouse-fans-powerfoilx.jpg",
-                    "units"
+                    "units",
                   )}
 
                   {renderInputWithBackgroundImage(
@@ -364,7 +369,7 @@ export default function PowerConsumptionPage() {
                     (value) => handleInputChange("powerOfLight", value),
                     "e.g., 40",
                     "https://www.cooperlighting.com/content/dam/cooper-lighting/markets/warehouse/warehouse-2400x1350.jpg",
-                    "W"
+                    "W",
                   )}
 
                   {renderInputWithBackgroundImage(
@@ -374,7 +379,7 @@ export default function PowerConsumptionPage() {
                     (value) => handleInputChange("numberOfLightsAroundMachine", value),
                     "e.g., 2",
                     "https://xsylights.com/wp-content/uploads/2019/10/15022016-5-1-1024x574.jpg",
-                    "units"
+                    "units",
                   )}
 
                   {renderInputWithBackgroundImage(
@@ -384,7 +389,7 @@ export default function PowerConsumptionPage() {
                     (value) => handleInputChange("powerOfOtherElectricalEquipment", value),
                     "e.g., 100",
                     "https://www.grayfordindustrial.com/images/electrical-equipment.jpg",
-                    "W"
+                    "W",
                   )}
                 </div>
               </CardContent>
@@ -405,7 +410,7 @@ export default function PowerConsumptionPage() {
                     (value) => handleInputChange("compressorPower", value),
                     "e.g., 5.5",
                     "https://5.imimg.com/data5/SELLER/Default/2021/7/YE/PM/MF/2390459/agricultural-compressors-500x500.jpg",
-                    "kW"
+                    "kW",
                   )}
 
                   {renderInputWithBackgroundImage(
@@ -415,7 +420,7 @@ export default function PowerConsumptionPage() {
                     (value) => handleInputChange("numberOfMachinesConnectedWithCompressor", value),
                     "e.g., 3",
                     "https://images.assetsdelivery.com/compings_v2/baloncici/baloncici1112/baloncici111200001.jpg",
-                    "units"
+                    "units",
                   )}
 
                   {renderInputWithBackgroundImage(
@@ -425,7 +430,7 @@ export default function PowerConsumptionPage() {
                     (value) => handleInputChange("effectiveRunningTimeOfCompressor", value),
                     "e.g., 70",
                     "https://smilehvac.ca/wp-content/uploads/2024/05/air-compressor-checking.png",
-                    "%"
+                    "%",
                   )}
                 </div>
               </CardContent>
@@ -446,7 +451,7 @@ export default function PowerConsumptionPage() {
                     (value) => handleInputChange("dieselConsumptionByGenset", value),
                     "e.g., 3.5",
                     "https://www.dieselgeneratortech.com/data/upload/ueditor/20250508/681c5001c2ff8.jpg",
-                    "litres/hour"
+                    "litres/hour",
                   )}
 
                   {renderInputWithBackgroundImage(
@@ -456,7 +461,7 @@ export default function PowerConsumptionPage() {
                     (value) => handleInputChange("dieselCostPerLitre", value),
                     "e.g., 90",
                     "https://www.livemint.com/lm-img/img/2023/12/01/1600x900/2-0-498164804-DIESEL157-0_1681036344722_1701405618751.JPG",
-                    "₹"
+                    "₹",
                   )}
 
                   {renderInputWithBackgroundImage(
@@ -466,7 +471,7 @@ export default function PowerConsumptionPage() {
                     (value) => handleInputChange("gensetPower", value),
                     "e.g., 62.5",
                     "https://multico.com.ph/wp-content/uploads/2023/06/image2-3-1024x683.png",
-                    "kVA"
+                    "kVA",
                   )}
                 </div>
               </CardContent>
@@ -488,16 +493,17 @@ export default function PowerConsumptionPage() {
                       calculatedData.gensetUnitRate,
                       "Per kWh",
                       "https://www.nicepng.com/png/full/669-6691568_budget-png.png",
-                      "green"
+                      "green",
                     )}
 
-                    {formData.electricityUnitRate > 0 && renderCalculationCard(
-                      "Grid Electricity Rate",
-                      formData.electricityUnitRate,
-                      "Per kWh",
-                      "https://group.met.com/media/omvoe0f3/electricity.jpg?anchor=center&mode=crop&width=1920&rnd=133293326643000000&mode=max&upscale=false",
-                      "blue"
-                    )}
+                    {formData.electricityUnitRate > 0 &&
+                      renderCalculationCard(
+                        "Grid Electricity Rate",
+                        formData.electricityUnitRate,
+                        "Per kWh",
+                        "https://group.met.com/media/omvoe0f3/electricity.jpg?anchor=center&mode=crop&width=1920&rnd=133293326643000000&mode=max&upscale=false",
+                        "blue",
+                      )}
                   </div>
                 </CardContent>
               </Card>

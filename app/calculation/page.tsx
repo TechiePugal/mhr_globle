@@ -12,8 +12,8 @@ import { type MachineData, saveMachine } from "@/lib/firebaseService"
 import { calculateFinalMachineHourRate } from "@/lib/calculations"
 import Navbar from "@/components/navbar"
 import ReportGenerator from "@/components/report-generator"
-import Link from "next/link"
-import Image from "next/image"
+import { calculateTotalCostPerHour } from "@/lib/total-cost-calculator"
+import TotalCostDisplay from "@/components/total-cost-display"
 export default function CalculationPage() {
   const router = useRouter()
   const [machineData, setMachineData] = useState<MachineData | null>(null)
@@ -21,6 +21,7 @@ export default function CalculationPage() {
   const [calculationResult, setCalculationResult] = useState<any>(null)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [totalCostBreakdown, setTotalCostBreakdown] = useState<any>({})
 
   useEffect(() => {
     const isLoggedIn = localStorage.getItem("isLoggedIn")
@@ -42,6 +43,13 @@ export default function CalculationPage() {
       router.push("/investment")
     }
   }, [router, profitPercentage])
+
+  useEffect(() => {
+    if (machineData) {
+      const totalCost = calculateTotalCostPerHour(machineData)
+      setTotalCostBreakdown(totalCost)
+    }
+  }, [machineData, profitPercentage])
 
   const handleProfitChange = (value: string) => {
     const profit = Number.parseFloat(value) || 0
@@ -149,42 +157,50 @@ export default function CalculationPage() {
           </div> */}
 
           {/* Header */}
-          <div className="mb-8">
-            <div className="flex items-center space-x-3 mb-4">
-              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                <Calculator className="w-5 h-5 text-green-600" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Final Machine Hour Rate Calculation</h1>
-                <p className="text-gray-600">Complete calculation with profit margin and cost breakdown</p>
-              </div>
-            </div>
-    <div>
-      <Image
-        src="https://www.climet.com/images/total_cost_ownership.png"
-        alt="Remote Image"
-        width={900} // original width for aspect ratio
-        height={300} // original height for aspect ratio
-        style={{ maxWidth: '900px', maxHeight: '200px', width: '100%', height: 'auto' }}
-      />
+<div className="sticky top-10 z-20 bg-white border-b border-gray-200">
+  <div className="px-4 py-3">
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0 sm:space-x-6">
+      {/* Icon and Text */}
+      <div className="flex items-center space-x-4">
+        <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+          <Calculator className="w-5 h-5 text-green-600" />
+        </div>
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Final Machine Hour Rate Calculation</h1>
+          <p className="text-sm text-gray-600">
+            Complete calculation with profit margin and cost breakdown
+          </p>
+        </div>
+      </div>
+
+      {/* Total Machine Cost Display */}
+      <div className="w-full sm:w-auto">
+        <TotalCostDisplay
+          totalCost={totalCostBreakdown}
+          currentStep={7}
+          machineName={machineData?.machineName || "Machine"}
+        />
+      </div>
     </div>
-            {saved ? (
-              <Alert className="bg-green-50 border-green-200">
-                <CheckCircle className="w-4 h-4 text-green-600" />
-                <AlertDescription className="text-green-800">
-                  Machine data saved successfully! You can now view it in your dashboard.
-                </AlertDescription>
-              </Alert>
-            ) : (
-              <Alert className="bg-blue-50 border-blue-200">
-                <Info className="w-4 h-4 text-blue-600" />
-                <AlertDescription className="text-blue-800">
-                  Review your machine hour rate calculation and adjust profit percentage as needed. Don't forget to save
-                  your calculation!
-                </AlertDescription>
-              </Alert>
-            )}
-          </div>
+  </div>
+
+  {/* Conditional Alert */}
+  {saved ? (
+    <Alert className="bg-green-50 border-t border-green-200">
+      <CheckCircle className="w-4 h-4 text-green-600" />
+      <AlertDescription className="text-green-800">
+        Machine data saved successfully! You can now view it in your dashboard.
+      </AlertDescription>
+    </Alert>
+  ) : (
+    <Alert className="bg-blue-50 border-t border-blue-200">
+      <Info className="w-4 h-4 text-blue-600" />
+      <AlertDescription className="text-blue-800">
+        Review your machine hour rate calculation and adjust profit percentage as needed. Don&apos;t forget to save your calculation!
+      </AlertDescription>
+    </Alert>
+  )}
+</div>
 
           <div className="space-y-6">
             {/* Machine Summary */}
@@ -197,104 +213,113 @@ export default function CalculationPage() {
                 <CardDescription>Overview of the machine being calculated</CardDescription>
               </CardHeader>
 
-<CardContent>
-  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-    {/* Machine Name with Image */}
-    <div className="p-4 bg-blue-50 rounded-lg flex flex-col items-center">
-      <img
-        src={machineData.imageUrl || "https://cdn.prod.website-files.com/620c0d2e51cac37f5958848f/64380f86cf354b9a10d0c34f_metalworking-cnc-milling-machine-2021-08-26-22-59-47-utc%20(1).jpg"} // fallback placeholder image
-        alt={machineData.machineName}
-        className="w-41 h-41 object-contain mb-3 rounded-md shadow-sm"
-      />
-      <div className="text-sm font-medium text-blue-800 mb-1">Machine Name</div>
-      <div className="text-lg font-bold text-blue-900 text-center">{machineData.machineName}</div>
-    </div>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* Machine Name with Image */}
+                  <div className="p-4 bg-blue-50 rounded-lg flex flex-col items-center">
+                    <img
+                      src={
+                        machineData.imageUrl ||
+                        "https://cdn.prod.website-files.com/620c0d2e51cac37f5958848f/64380f86cf354b9a10d0c34f_metalworking-cnc-milling-machine-2021-08-26-22-59-47-utc%20(1).jpg"
+                      } // fallback placeholder image
+                      alt={machineData.machineName}
+                      className="w-41 h-41 object-contain mb-3 rounded-md shadow-sm"
+                    />
+                    <div className="text-sm font-medium text-blue-800 mb-1">Machine Name</div>
+                    <div className="text-lg font-bold text-blue-900 text-center">{machineData.machineName}</div>
+                  </div>
 
-    {/* Investment Cost */}
-    <div className="p-4 bg-green-50 rounded-lg">
-      <img
-        src={machineData.imageUrl || "https://cdn.corporatefinanceinstitute.com/assets/income-investing-1024x576.jpeg"} // fallback placeholder image
-        alt={machineData.machineName}
-        className="w-41 h-41 object-contain mb-3 rounded-md shadow-sm"
-      />
-      <div className="text-sm font-medium text-green-800 mb-1">Investment Cost</div>
-      <div className="text-lg font-bold text-green-900">
-        ₹{machineData.investmentData.machineCost.toLocaleString()}
-      </div>
-    </div>
+                  {/* Investment Cost */}
+                  <div className="p-4 bg-green-50 rounded-lg">
+                    <img
+                      src={
+                        machineData.imageUrl ||
+                        "https://cdn.corporatefinanceinstitute.com/assets/income-investing-1024x576.jpeg"
+                      } // fallback placeholder image
+                      alt={machineData.machineName}
+                      className="w-41 h-41 object-contain mb-3 rounded-md shadow-sm"
+                    />
+                    <div className="text-sm font-medium text-green-800 mb-1">Investment Cost</div>
+                    <div className="text-lg font-bold text-green-900">
+                      ₹{machineData.investmentData.machineCost.toLocaleString()}
+                    </div>
+                  </div>
 
-    {/* Machine Power */}
-    <div className="p-4 bg-purple-50 rounded-lg">
-      <img
-        src={machineData.imageUrl || "https://m.economictimes.com/thumb/msid-112197120,width-1600,height-900,resizemode-4,imgsize-81962/peak-power-demand.jpg"} // fallback placeholder image
-        alt={machineData.machineName}
-        className="w-41 h-41 object-contain mb-3 rounded-md shadow-sm"
-      />
-      <div className="text-sm font-medium text-purple-800 mb-1">Machine Power</div>
-      <div className="text-lg font-bold text-purple-900">{machineData.powerData.machinePower} kW</div>
-    </div>
-  </div>
-</CardContent>
-
+                  {/* Machine Power */}
+                  <div className="p-4 bg-purple-50 rounded-lg">
+                    <img
+                      src={
+                        machineData.imageUrl ||
+                        "https://m.economictimes.com/thumb/msid-112197120,width-1600,height-900,resizemode-4,imgsize-81962/peak-power-demand.jpg"
+                      } // fallback placeholder image
+                      alt={machineData.machineName}
+                      className="w-41 h-41 object-contain mb-3 rounded-md shadow-sm"
+                    />
+                    <div className="text-sm font-medium text-purple-800 mb-1">Machine Power</div>
+                    <div className="text-lg font-bold text-purple-900">{machineData.powerData.machinePower} kW</div>
+                  </div>
+                </div>
+              </CardContent>
             </Card>
 
             {/* Profit Configuration */}
-<Card>
-  <CardHeader>
-    <CardTitle>Profit Configuration</CardTitle>
-    <CardDescription>Adjust profit percentage to see final machine hour rate</CardDescription>
-  </CardHeader>
-  <CardContent>
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
-      
-      
-      <div className="p-4 bg-red-50 rounded-lg flex flex-col border-2 border-red-200 items-center text-center">
-        <img
-          src="https://qndqdermacare.com/public/storage/Blogs/0ZCYa3Lkpgt0rTc1z1yXQBJhgMQ3xHctPkZJoVI3.jpeg" 
-          alt="Total Cost"
-          className="w-39 h-39 object-contain mb-3 rounded-md shadow-sm"
-        /><Label htmlFor="profit" className="text-sm font-medium">
-          Profit Percentage (%)
-        </Label>
-        <Input
-          id="profit"
-          type="number"
-          step="0.1"
-          value={profitPercentage}
-          onChange={(e) => handleProfitChange(e.target.value)}
-          placeholder="Enter profit percentage"
-          className="h-7"
-        />
-      </div>
+            <Card>
+              <CardHeader>
+                <CardTitle>Profit Configuration</CardTitle>
+                <CardDescription>Adjust profit percentage to see final machine hour rate</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+                  <div className="p-4 bg-red-50 rounded-lg flex flex-col border-2 border-red-200 items-center text-center">
+                    <img
+                      src="https://qndqdermacare.com/public/storage/Blogs/0ZCYa3Lkpgt0rTc1z1yXQBJhgMQ3xHctPkZJoVI3.jpeg"
+                      alt="Total Cost"
+                      className="w-39 h-39 object-contain mb-3 rounded-md shadow-sm"
+                    />
+                    <Label htmlFor="profit" className="text-sm font-medium">
+                      Profit Percentage (%)
+                    </Label>
+                    <Input
+                      id="profit"
+                      type="number"
+                      step="0.1"
+                      value={profitPercentage}
+                      onChange={(e) => handleProfitChange(e.target.value)}
+                      placeholder="Enter profit percentage"
+                      className="h-7"
+                    />
+                  </div>
 
-      {/* Total Cost/Hour with Image */}
-      <div className="p-4 bg-blue-50 rounded-lg flex flex-col border-2 border-blue-200 items-center text-center">
-        <img
-          src="https://cdn.corporatefinanceinstitute.com/assets/income-investing-1024x576.jpeg" 
-          alt="Total Cost"
-          className="w-41 h-41 object-contain mb-3 rounded-md shadow-sm"
-        /><br/>
-        <div className="text-sm text-blue-600 mb-1">Total Cost/Hour</div>
-        <div className="text-2xl font-bold text-blue-900">₹{totalCostPerHour.toFixed(2)}</div>
-      </div>
+                  {/* Total Cost/Hour with Image */}
+                  <div className="p-4 bg-blue-50 rounded-lg flex flex-col border-2 border-blue-200 items-center text-center">
+                    <img
+                      src="https://cdn.corporatefinanceinstitute.com/assets/income-investing-1024x576.jpeg"
+                      alt="Total Cost"
+                      className="w-41 h-41 object-contain mb-3 rounded-md shadow-sm"
+                    />
+                    <br />
+                    <div className="text-sm text-blue-600 mb-1">Total Cost/Hour</div>
+                    <div className="text-2xl font-bold text-blue-900">₹{totalCostPerHour.toFixed(2)}</div>
+                  </div>
 
-      {/* Machine Hour Rate with Image */}
-      <div className="p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-lg text-center border-2 border-green-200 flex flex-col items-center">
-        <img
-          src="https://cdn.prod.website-files.com/620c0d2e51cac37f5958848f/64380f86cf354b9a10d0c34f_metalworking-cnc-milling-machine-2021-08-26-22-59-47-utc%20(1).jpg" 
-          alt="Machine Hour Rate"
-          className="w-41 h-41 object-contain mb-3 rounded-md shadow-sm"
-        />
-        <div className="text-sm text-green-600 mb-1">Machine Hour Rate<div className="text-xs text-green-600 mt-1">Including {profitPercentage}% profit</div></div>
-        <div className="text-3xl font-bold text-green-900">
-          ₹{calculationResult.machineHourRate.toFixed(2)}
-        </div>
-        
-      </div>
-    </div>
-  </CardContent>
-</Card>
-
+                  {/* Machine Hour Rate with Image */}
+                  <div className="p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-lg text-center border-2 border-green-200 flex flex-col items-center">
+                    <img
+                      src="https://cdn.prod.website-files.com/620c0d2e51cac37f5958848f/64380f86cf354b9a10d0c34f_metalworking-cnc-milling-machine-2021-08-26-22-59-47-utc%20(1).jpg"
+                      alt="Machine Hour Rate"
+                      className="w-41 h-41 object-contain mb-3 rounded-md shadow-sm"
+                    />
+                    <div className="text-sm text-green-600 mb-1">
+                      Machine Hour Rate
+                      <div className="text-xs text-green-600 mt-1">Including {profitPercentage}% profit</div>
+                    </div>
+                    <div className="text-3xl font-bold text-green-900">
+                      ₹{calculationResult.machineHourRate.toFixed(2)}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Cost Breakdown */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

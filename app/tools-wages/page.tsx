@@ -7,10 +7,11 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { ArrowLeft, ArrowRight, Wrench, Info } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Wrench, Info } from "lucide-react"
 import type { MachineData } from "@/lib/firebaseService"
 import Navbar from "@/components/navbar"
-import Image from "next/image"
+import { calculateTotalCostPerHour } from "@/lib/total-cost-calculator"
+import TotalCostDisplay from "@/components/total-cost-display"
 
 export default function ToolsWagesPage() {
   const router = useRouter()
@@ -24,6 +25,7 @@ export default function ToolsWagesPage() {
   const [machineName, setMachineName] = useState("")
   const [toolCostPerHour, setToolCostPerHour] = useState<number>(0)
   const [workingHoursPerDay, setWorkingHoursPerDay] = useState<number>(8)
+  const [totalCostBreakdown, setTotalCostBreakdown] = useState<any>({})
 
   useEffect(() => {
     const isLoggedIn = localStorage.getItem("isLoggedIn")
@@ -48,6 +50,24 @@ export default function ToolsWagesPage() {
     // Calculate tool cost per hour using the same logic as calculateFinalMachineHourRate
     const costPerHour = formData.averageToolCostPerMonth / (workingHoursPerDay * 26) // 26 working days per month
     setToolCostPerHour(costPerHour)
+  }, [formData, workingHoursPerDay])
+
+  useEffect(() => {
+    // Calculate total cost breakdown
+    const savedData = localStorage.getItem("currentMachine")
+    let machineData = {}
+    if (savedData) {
+      machineData = JSON.parse(savedData)
+    }
+
+    // Update with current form data
+    const currentMachineData = {
+      ...machineData,
+      toolsWagesData: formData,
+    }
+
+    const totalCost = calculateTotalCostPerHour(currentMachineData)
+    setTotalCostBreakdown(totalCost)
   }, [formData, workingHoursPerDay])
 
   const validateForm = () => {
@@ -100,51 +120,53 @@ export default function ToolsWagesPage() {
     imageUrl: string,
     unit: string,
     error?: string,
-    required: boolean = false,
-    description?: string
+    required = false,
+    description?: string,
   ) => (
-<div className="space-y-2">
-  <div className="rounded-lg overflow-hidden bg-white shadow-lg flex flex-col">
+    <div className="space-y-2">
+      <div className="rounded-lg overflow-hidden bg-white shadow-lg flex flex-col">
+        {/* Top: Image Banner */}
+        <div
+          className="h-48 bg-cover bg-center"
+          style={{
+            backgroundImage: `url(${imageUrl})`,
+            backgroundBlendMode: "overlay",
+            backgroundColor: "rgba(0, 0, 0, 0.6)",
+          }}
+        ></div>
 
-    {/* Top: Image Banner */}
-    <div
-      className="h-48 bg-cover bg-center"
-      style={{
-        backgroundImage: `url(${imageUrl})`,
-        backgroundBlendMode: "overlay",
-        backgroundColor: "rgba(0, 0, 0, 0.6)",
-      }}
-    ></div>
+        {/* Bottom: Form Section */}
+        <div className="p-6 space-y-4">
+          <Label htmlFor={id} className="text-gray-900 font-semibold text-lg">
+            {label} {required && <span className="text-red-600">*</span>}
+          </Label>
 
-    {/* Bottom: Form Section */}
-    <div className="p-6 space-y-4">
-      <Label htmlFor={id} className="text-gray-900 font-semibold text-lg">
-        {label} {required && <span className="text-red-600">*</span>}
-      </Label>
+          <Input
+            id={id}
+            type="number"
+            value={value || ""}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={placeholder}
+            className={`h-12 text-lg font-medium bg-white border ${
+              error ? "border-red-400" : "border-gray-300"
+            } text-gray-900 placeholder:text-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-200`}
+          />
 
-      <Input
-        id={id}
-        type="number"
-        value={value || ""}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className={`h-12 text-lg font-medium bg-white border ${
-          error ? "border-red-400" : "border-gray-300"
-        } text-gray-900 placeholder:text-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-200`}
-      />
+          {description && <p className="text-gray-600 text-sm">{description}</p>}
+        </div>
+      </div>
 
-      {description && (
-        <p className="text-gray-600 text-sm">{description}</p>
-      )}
+      {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
     </div>
-  </div>
-
-  {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
-</div>
-
   )
 
-  const renderCalculationCard = (title: string, value: number, unit: string, imageUrl: string, colorScheme: string = "blue") => {
+  const renderCalculationCard = (
+    title: string,
+    value: number,
+    unit: string,
+    imageUrl: string,
+    colorScheme = "blue",
+  ) => {
     return (
       <div
         className="relative p-6 bg-cover bg-center text-white rounded-lg min-h-[200px] flex flex-col justify-end"
@@ -156,9 +178,7 @@ export default function ToolsWagesPage() {
       >
         <div className="space-y-2">
           <div className="text-white font-medium text-lg">{title}</div>
-          <div className="text-3xl font-bold text-white">
-            ₹{value.toFixed(2)}
-          </div>
+          <div className="text-3xl font-bold text-white">₹{value.toFixed(2)}</div>
           <div className="text-white/80 text-sm">{unit}</div>
         </div>
       </div>
@@ -181,69 +201,42 @@ export default function ToolsWagesPage() {
       <main className="md:ml-64 pt-4">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           {/* Header */}
-          <div className="mb-8">
-            <div className="flex items-center space-x-3 mb-4">
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Wrench className="w-5 h-5 text-blue-600" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Tools & Direct Labor Costs</h1>
-                <p className="text-gray-600">
-                  Enter costs for tools and direct labor for <span className="font-medium">{machineName}</span>
-                </p>
-              </div>
-            </div>
-
-            {/* Tool Cost Per Hour Display */}
-
-  <div className="relative mb-6 rounded-lg overflow-hidden shadow-lg max-w-full h-[200px] md:h-[200px]">
-    {/* Background Image */}
-    <Image
-      src="https://blog.allgeo.com/wp-content/uploads/2024/12/How-To-Calculate-Labor-Cost-In-Manufacturing_.jpg"
-      alt="Labor Cost Calculation"
-      fill
-      className="object-cover w-full h-full"
-    />
-
-    {/* Overlay Content */}
-    <div className="absolute inset-0 bg-orange-900 bg-opacity-70 p-4 md:p-6 flex flex-col justify-center">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-white text-sm md:text-base">
+<div className="sticky top-10 z-20 bg-white border-b border-gray-200">
+  <div className="px-4 py-3">
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0 sm:space-x-6">
+      {/* Icon and Text */}
+      <div className="flex items-center space-x-4">
+        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+          <Wrench className="w-5 h-5 text-blue-600" />
+        </div>
         <div>
-          <h3 className="text-base md:text-lg font-semibold mb-1">Tool Cost per Hour</h3>
-          <div className="text-2xl md:text-4xl font-bold mb-1">₹{toolCostPerHour.toFixed(2)}</div>
-          <p>per hour</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Tools & Direct Labor Costs</h1>
+          <p className="text-sm text-gray-600">
+            Enter costs for tools and direct labor for <span className="font-medium">{machineName}</span>
+          </p>
         </div>
-        <div className="space-y-1 md:space-y-2">
-          <div className="flex justify-between">
-            <span>Monthly Tool Cost:</span>
-            <span>₹{formData.averageToolCostPerMonth.toLocaleString()}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Working Days/Month:</span>
-            <span>26 days</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Working Hours/Day:</span>
-            <span>{workingHoursPerDay} hours</span>
-          </div>
-          <div className="flex justify-between font-semibold border-t border-white/30 pt-1 mt-1">
-            <span>Total Monthly Hours:</span>
-            <span>{workingHoursPerDay * 26} hours</span>
-          </div>
-        </div>
+      </div>
+
+      {/* Cost Display */}
+      <div className="w-full sm:w-auto">
+        <TotalCostDisplay
+          totalCost={totalCostBreakdown}
+          currentStep={5}
+          machineName={machineName || "Machine"}
+        />
       </div>
     </div>
   </div>
 
+  {/* Optional Alert below Header */}
+  <Alert className="bg-blue-50 border-t border-blue-200">
+    <Info className="w-4 h-4 text-blue-600" />
+    <AlertDescription className="text-blue-800">
+      This information will be used to calculate hourly tool costs and direct labor wages for machine operation.
+    </AlertDescription>
+  </Alert>
+</div>
 
-            <Alert className="bg-blue-50 border-blue-200">
-              <Info className="w-4 h-4 text-blue-600" />
-              <AlertDescription className="text-blue-800">
-                This information will be used to calculate hourly tool costs and direct labor wages for machine
-                operation.
-              </AlertDescription>
-            </Alert>
-          </div>
 
           <div className="space-y-8">
             {/* Tool Costs */}
@@ -264,7 +257,7 @@ export default function ToolsWagesPage() {
                     "₹",
                     undefined,
                     false,
-                    "Include cutting tools, measuring instruments, and other consumable tools"
+                    "Include cutting tools, measuring instruments, and other consumable tools",
                   )}
                 </div>
               </CardContent>
@@ -288,7 +281,7 @@ export default function ToolsWagesPage() {
                     "₹",
                     errors.operatorSalaryPerMonth,
                     true,
-                    "Primary machine operator salary"
+                    "Primary machine operator salary",
                   )}
 
                   {renderInputWithBackgroundImage(
@@ -301,7 +294,7 @@ export default function ToolsWagesPage() {
                     "₹",
                     undefined,
                     false,
-                    "Assistant/helper salary (if applicable)"
+                    "Assistant/helper salary (if applicable)",
                   )}
 
                   {renderInputWithBackgroundImage(
@@ -314,7 +307,7 @@ export default function ToolsWagesPage() {
                     "₹",
                     undefined,
                     false,
-                    "Quality control inspector salary"
+                    "Quality control inspector salary",
                   )}
                 </div>
               </CardContent>
@@ -331,28 +324,30 @@ export default function ToolsWagesPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {formData.averageToolCostPerMonth > 0 && renderCalculationCard(
-                      "Tool Costs",
-                      formData.averageToolCostPerMonth,
-                      "Per month",
-                      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR843YBdkBdZ8UIPPFGnPxqKtEqcE0LhOglJw&s",
-                      "green"
-                    )}
+                    {formData.averageToolCostPerMonth > 0 &&
+                      renderCalculationCard(
+                        "Tool Costs",
+                        formData.averageToolCostPerMonth,
+                        "Per month",
+                        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR843YBdkBdZ8UIPPFGnPxqKtEqcE0LhOglJw&s",
+                        "green",
+                      )}
 
-                    {totalDirectLabor > 0 && renderCalculationCard(
-                      "Direct Labor",
-                      totalDirectLabor,
-                      "Per month",
-                      "https://cdn-icons-png.flaticon.com/512/1995/1995532.png",
-                      "blue"
-                    )}
+                    {totalDirectLabor > 0 &&
+                      renderCalculationCard(
+                        "Direct Labor",
+                        totalDirectLabor,
+                        "Per month",
+                        "https://cdn-icons-png.flaticon.com/512/1995/1995532.png",
+                        "blue",
+                      )}
 
                     {renderCalculationCard(
                       "Total Cost",
                       totalMonthlyCost,
                       "Per month",
                       "https://cdn-icons-png.freepik.com/512/8435/8435647.png",
-                      "purple"
+                      "purple",
                     )}
                   </div>
 
