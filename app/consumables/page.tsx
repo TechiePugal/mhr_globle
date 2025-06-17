@@ -103,39 +103,45 @@ export default function ConsumablesPage() {
     required: boolean = false,
     description?: string
   ) => (
-    <div className="space-y-2">
-      <div
-        className="relative p-6 bg-cover bg-center text-white rounded-lg min-h-[200px] flex flex-col justify-between hover:shadow-lg transition-shadow duration-200"
-        style={{
-          backgroundImage: `url(${imageUrl})`,
-          backgroundBlendMode: "overlay",
-          backgroundColor: "rgba(0, 0, 0, 0.6)",
-        }}
-      >
-        <div className="space-y-4">
-          <Label htmlFor={id} className="text-white font-semibold text-lg">
-            {label} {unit && <span className="text-yellow-300">({unit})</span>} {required && <span className="text-red-300">*</span>}
-          </Label>
-          
-          <Input
-            id={id}
-            type="number"
-            step="0.01"
-            value={value || ""}
-            onChange={(e) => onChange(e.target.value)}
-            placeholder={placeholder}
-            className={`h-12 text-lg font-medium bg-white/90 backdrop-blur-sm border-white/50 text-gray-900 placeholder:text-gray-600 ${
-              error ? "border-red-400" : "border-white/50"
-            } focus:border-white focus:bg-white`}
-          />
-          
-          {description && (
-            <p className="text-white/80 text-sm">{description}</p>
-          )}
-        </div>
-      </div>
-      {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
+<div className="space-y-2">
+  <div className="rounded-lg overflow-hidden bg-white shadow-lg flex flex-col">
+
+    {/* Top: Image Banner */}
+    <div
+      className="h-48 bg-cover bg-center"
+      style={{
+        backgroundImage: `url(${imageUrl})`,
+        backgroundBlendMode: "overlay",
+        backgroundColor: "rgba(0, 0, 0, 0.6)",
+      }}
+    ></div>
+
+    {/* Bottom: Form Section */}
+    <div className="p-6 space-y-4">
+      <Label htmlFor={id} className="text-gray-900 font-semibold text-lg">
+        {label} {required && <span className="text-red-600">*</span>}
+      </Label>
+
+      <Input
+        id={id}
+        type="number"
+        value={value || ""}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className={`h-12 text-lg font-medium bg-white border ${
+          error ? "border-red-400" : "border-gray-300"
+        } text-gray-900 placeholder:text-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-200`}
+      />
+
+      {description && (
+        <p className="text-gray-600 text-sm">{description}</p>
+      )}
     </div>
+  </div>
+
+  {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
+</div>
+
   )
 
   const renderCalculationCard = (title: string, value: number, unit: string, imageUrl: string, colorScheme: string = "blue") => {
