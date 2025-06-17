@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { ArrowLeft, ArrowRight, Zap, Info } from "lucide-react"
+import { ArrowLeft, ArrowRight, Zap, Info } from 'lucide-react'
 import type { MachineData } from "@/lib/firebaseService"
 import { calculatePowerData } from "@/lib/calculations"
 import Navbar from "@/components/navbar"
@@ -36,6 +36,7 @@ export default function PowerConsumptionPage() {
   const [errors, setErrors] = useState<any>({})
   const [machineName, setMachineName] = useState("")
   const [calculatedData, setCalculatedData] = useState<any>({})
+  const [powerCostPerHour, setPowerCostPerHour] = useState<number>(0)
 
   useEffect(() => {
     const isLoggedIn = localStorage.getItem("isLoggedIn")
@@ -59,6 +60,22 @@ export default function PowerConsumptionPage() {
     if (formData.dieselConsumptionByGenset > 0 && formData.dieselCostPerLitre > 0 && formData.gensetPower > 0) {
       const calculated = calculatePowerData(formData)
       setCalculatedData(calculated)
+    }
+
+    // Calculate power cost per hour using the same logic as calculateFinalMachineHourRate
+    if (formData.machinePower > 0 && formData.effectiveRunningTimeOfMotors > 0 && formData.utilization > 0 && formData.electricityUnitRate > 0) {
+      const motorPowerConsumption = (formData.machinePower * formData.effectiveRunningTimeOfMotors) / 100
+      const fanPowerConsumption = (formData.powerOfFan * formData.numberOfFansAroundMachine) / 1000
+      const lightPowerConsumption = (formData.powerOfLight * formData.numberOfLightsAroundMachine) / 1000
+      const compressorPowerConsumption = formData.numberOfMachinesConnectedWithCompressor > 0 
+        ? (formData.compressorPower * formData.effectiveRunningTimeOfCompressor) / 100 / formData.numberOfMachinesConnectedWithCompressor
+        : 0
+      const otherEquipmentPowerConsumption = formData.powerOfOtherElectricalEquipment / 1000
+
+      const totalPowerConsumption = motorPowerConsumption + fanPowerConsumption + lightPowerConsumption + compressorPowerConsumption + otherEquipmentPowerConsumption
+      const costPerHour = (totalPowerConsumption * formData.electricityUnitRate * formData.utilization) / 100
+
+      setPowerCostPerHour(costPerHour)
     }
   }, [formData])
 
@@ -193,16 +210,48 @@ export default function PowerConsumptionPage() {
               </div>
             </div>
 
-            <div className="mb-6">
-              <Image
-                src="https://m.economictimes.com/thumb/msid-112197120,width-1600,height-900,resizemode-4,imgsize-81962/peak-power-demand.jpg"
-                alt="Power Consumption"
-                width={900}
-                height={300}
-                style={{ maxWidth: '900px', maxHeight: '200px', width: '100%', height: 'auto' }}
-                className="rounded-lg shadow-md"
-              />
-            </div>
+            {/* Power Cost Per Hour Display */}
+
+  <div className="relative mb-6 rounded-lg overflow-hidden shadow-lg max-w-full h-[200px] md:h-[200px]">
+    {/* Background Image */}
+    <Image
+      src="https://m.economictimes.com/thumb/msid-112197120,width-1600,height-900,resizemode-4,imgsize-81962/peak-power-demand.jpg"
+      alt="Power Consumption"
+      fill
+      className="object-cover w-full h-full"
+    />
+
+    {/* Overlay Content */}
+    <div className="absolute inset-0 bg-yellow-900 bg-opacity-70 p-4 md:p-6 flex flex-col justify-center">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-white text-sm md:text-base">
+        <div>
+          <h3 className="text-base md:text-lg font-semibold mb-1">Power Cost per Hour</h3>
+          <div className="text-2xl md:text-4xl font-bold mb-1">₹{powerCostPerHour.toFixed(2)}</div>
+          <p>per hour</p>
+        </div>
+        <div className="space-y-1 md:space-y-2">
+          <div className="flex justify-between">
+            <span>Motor Power:</span>
+            <span>{((formData.machinePower * formData.effectiveRunningTimeOfMotors) / 100).toFixed(2)} kW</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Auxiliary Equipment:</span>
+            <span>{(((formData.powerOfFan * formData.numberOfFansAroundMachine) + (formData.powerOfLight * formData.numberOfLightsAroundMachine) + formData.powerOfOtherElectricalEquipment) / 1000).toFixed(2)} kW</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Electricity Rate:</span>
+            <span>₹{formData.electricityUnitRate}/kWh</span>
+          </div>
+          <div className="flex justify-between font-semibold border-t border-white/30 pt-1 mt-1">
+            <span>Utilization:</span>
+            <span>{formData.utilization}%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
 
             <Alert className="bg-blue-50 border-blue-200">
               <Info className="w-4 h-4 text-blue-600" />

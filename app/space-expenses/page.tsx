@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { ArrowLeft, ArrowRight, Building, Info } from "lucide-react"
+import { ArrowLeft, ArrowRight, Building, Info } from 'lucide-react'
 import type { MachineData } from "@/lib/firebaseService"
 import Navbar from "@/components/navbar"
 import Link from "next/link"
@@ -24,6 +24,8 @@ export default function SpaceExpensesPage() {
   })
   const [errors, setErrors] = useState<any>({})
   const [machineName, setMachineName] = useState("")
+  const [spaceCostPerHour, setSpaceCostPerHour] = useState<number>(0)
+  const [workingHoursPerDay, setWorkingHoursPerDay] = useState<number>(8)
 
   useEffect(() => {
     const isLoggedIn = localStorage.getItem("isLoggedIn")
@@ -38,10 +40,25 @@ export default function SpaceExpensesPage() {
       const machineData: MachineData = JSON.parse(savedData)
       setFormData(machineData.spaceData)
       setMachineName(machineData.machineName)
+      setWorkingHoursPerDay(machineData.investmentData.workingHoursPerDay || 8)
     } else {
       router.push("/investment")
     }
   }, [router])
+
+  useEffect(() => {
+    if (formData.factoryRentPerMonth > 0 && formData.factorySpaceInSqFt > 0 && formData.spaceOccupiedByMachine > 0) {
+      // Calculate space cost per hour using the same logic as calculateFinalMachineHourRate
+      const machineSpaceCost = formData.factoryRentPerMonth * 12 * (formData.spaceOccupiedByMachine / formData.factorySpaceInSqFt)
+      const commonSpaceCost = formData.numberOfMachinesInFactory > 0 
+        ? (formData.factoryRentPerMonth * 12 * (formData.commonSpaceInSqFt / formData.factorySpaceInSqFt)) / formData.numberOfMachinesInFactory
+        : 0
+      const annualSpaceCost = machineSpaceCost + commonSpaceCost
+      const costPerHour = annualSpaceCost / (workingHoursPerDay * 365)
+      
+      setSpaceCostPerHour(costPerHour)
+    }
+  }, [formData, workingHoursPerDay])
 
   const validateForm = () => {
     const newErrors: any = {}
@@ -192,16 +209,46 @@ export default function SpaceExpensesPage() {
               </div>
             </div>
 
-            <div className="mb-6">
-              <Image
-                src="https://estimatorflorida.com/wp-content/uploads/2022/04/cost-to-build-a-warehouse.jpg"
-                alt="Factory Warehouse"
-                width={900}
-                height={300}
-                style={{ maxWidth: '900px', maxHeight: '200px', width: '100%', height: 'auto' }}
-                className="rounded-lg shadow-md"
-              />
-            </div>
+            {/* Space Cost Per Hour Display */}
+
+  <div className="relative mb-6 rounded-lg overflow-hidden shadow-lg max-w-full h-[200px] md:h-[200px]">
+    {/* Background Image */}
+    <Image
+      src="https://estimatorflorida.com/wp-content/uploads/2022/04/cost-to-build-a-warehouse.jpg"
+      alt="Factory Warehouse"
+      fill
+      className="object-cover w-full h-full"
+    />
+
+    {/* Overlay Content */}
+    <div className="absolute inset-0 bg-green-900 bg-opacity-70 p-4 md:p-6 flex flex-col justify-center">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-white text-sm md:text-base">
+        <div>
+          <h3 className="text-base md:text-lg font-semibold mb-1">Space Cost per Hour</h3>
+          <div className="text-2xl md:text-4xl font-bold mb-1">₹{spaceCostPerHour.toFixed(2)}</div>
+          <p>per hour</p>
+        </div>
+        <div className="space-y-1 md:space-y-2">
+          <div className="flex justify-between">
+            <span>Machine Space Cost:</span>
+            <span>₹{((formData.factoryRentPerMonth * 12 * (formData.spaceOccupiedByMachine / formData.factorySpaceInSqFt)) / 12).toLocaleString()}/month</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Common Space Cost:</span>
+            <span>₹{(formData.numberOfMachinesInFactory > 0
+              ? ((formData.factoryRentPerMonth * 12 * (formData.commonSpaceInSqFt / formData.factorySpaceInSqFt)) / formData.numberOfMachinesInFactory / 12)
+              : 0).toLocaleString()}/month</span>
+          </div>
+          <div className="flex justify-between font-semibold border-t border-white/30 pt-1 mt-1">
+            <span>Total Annual Cost:</span>
+            <span>₹{(spaceCostPerHour * workingHoursPerDay * 365).toLocaleString()}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
 
             <Alert className="bg-blue-50 border-blue-200">
               <Info className="w-4 h-4 text-blue-600" />

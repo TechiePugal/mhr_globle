@@ -26,6 +26,7 @@ export default function InvestmentPage() {
   })
   const [machineName, setMachineName] = useState("")
   const [calculatedData, setCalculatedData] = useState<any>({})
+  const [investmentCostPerHour, setInvestmentCostPerHour] = useState<number>(0)
   const [errors, setErrors] = useState<any>({})
 
   useEffect(() => {
@@ -45,9 +46,19 @@ export default function InvestmentPage() {
   }, [router])
 
   useEffect(() => {
-    if (formData.machineCost > 0 && formData.lifeOfMachine > 0) {
+    if (formData.machineCost > 0 && formData.lifeOfMachine > 0 && formData.workingHoursPerDay > 0) {
       const calculated = calculateInvestmentData(formData)
       setCalculatedData(calculated)
+
+      // Calculate investment cost per hour using the same logic as calculateFinalMachineHourRate
+      const annualDepreciation =
+        (formData.machineCost - (formData.machineCost * formData.scrapRate) / 100) / formData.lifeOfMachine
+
+      const annualInterest = (calculated.currentValueOfMachine * formData.interestRate) / 100
+      const annualInvestmentCost = annualDepreciation + annualInterest
+      const investmentCostPerHour = annualInvestmentCost / (formData.workingHoursPerDay * 365)
+
+      setInvestmentCostPerHour(investmentCostPerHour)
     }
   }, [formData])
 
@@ -171,9 +182,9 @@ export default function InvestmentPage() {
     imageUrl: string,
     unit: string,
     error?: string,
-    required: boolean = false,
+    required = false,
     description?: string,
-    type: string = "number"
+    type = "number",
   ) => (
     <div className="space-y-2">
       <div
@@ -186,9 +197,10 @@ export default function InvestmentPage() {
       >
         <div className="space-y-4">
           <Label htmlFor={id} className="text-white font-semibold text-lg">
-            {label} {unit && <span className="text-yellow-300">({unit})</span>} {required && <span className="text-red-300">*</span>}
+            {label} {unit && <span className="text-yellow-300">({unit})</span>}{" "}
+            {required && <span className="text-red-300">*</span>}
           </Label>
-          
+
           <Input
             id={id}
             type={type}
@@ -200,17 +212,21 @@ export default function InvestmentPage() {
               error ? "border-red-400" : "border-white/50"
             } focus:border-white focus:bg-white`}
           />
-          
-          {description && (
-            <p className="text-white/80 text-sm">{description}</p>
-          )}
+
+          {description && <p className="text-white/80 text-sm">{description}</p>}
         </div>
       </div>
       {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
     </div>
   )
 
-  const renderCalculationCard = (title: string, value: number | string, unit: string, imageUrl: string, description?: string) => {
+  const renderCalculationCard = (
+    title: string,
+    value: number | string,
+    unit: string,
+    imageUrl: string,
+    description?: string,
+  ) => {
     return (
       <div
         className="relative p-6 bg-cover bg-center text-white rounded-lg min-h-[200px] flex flex-col justify-end"
@@ -223,12 +239,14 @@ export default function InvestmentPage() {
         <div className="space-y-2">
           <div className="text-white font-medium text-lg">{title}</div>
           <div className="text-3xl font-bold text-white">
-            {typeof value === 'number' ? (title.includes('₹') ? `₹${value.toLocaleString()}` : value.toLocaleString()) : value}
+            {typeof value === "number"
+              ? title.includes("₹")
+                ? `₹${value.toLocaleString()}`
+                : value.toLocaleString()
+              : value}
           </div>
           <div className="text-white/80 text-sm">{unit}</div>
-          {description && (
-            <div className="text-white/70 text-xs">{description}</div>
-          )}
+          {description && <div className="text-white/70 text-xs">{description}</div>}
         </div>
       </div>
     )
@@ -252,16 +270,61 @@ export default function InvestmentPage() {
               </div>
             </div>
 
-            <div className="mb-6">
-              <Image
-                src="https://cdn.corporatefinanceinstitute.com/assets/income-investing-1024x576.jpeg"
-                alt="Investment Details"
-                width={900}
-                height={300}
-                style={{ maxWidth: '900px', maxHeight: '200px', width: '100%', height: 'auto' }}
-                className="rounded-lg shadow-md"
-              />
-            </div>
+            {/* Investment Cost Per Hour Display */}
+{/* Investment Cost Section */}
+<div className="relative mb-6 rounded-lg overflow-hidden shadow-lg max-w-full h-[200px] md:h-[200px]">
+  {/* Background Image */}
+  <Image
+    src="https://cdn.corporatefinanceinstitute.com/assets/income-investing-1024x576.jpeg"
+    alt="Investment Details"
+    fill
+    className="object-cover w-full h-full"
+  />
+
+  {/* Overlay Content */}
+  <div className="absolute inset-0 bg-blue-900 bg-opacity-70 p-4 md:p-6 flex flex-col justify-center">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-white text-sm md:text-base">
+      <div>
+        <h3 className="text-base md:text-lg font-semibold mb-1">Investment Cost per Hour</h3>
+        <div className="text-2xl md:text-4xl font-bold mb-1">₹{investmentCostPerHour?.toFixed(2) || "0.00"}</div>
+        <p>per hour</p>
+      </div>
+      <div className="space-y-1 md:space-y-2">
+        <div className="flex justify-between">
+          <span>Annual Depreciation:</span>
+          <span>
+            ₹
+            {formData.machineCost && formData.scrapRate && formData.lifeOfMachine
+              ? (
+                  (formData.machineCost - (formData.machineCost * formData.scrapRate) / 100) /
+                  formData.lifeOfMachine
+                ).toLocaleString()
+              : "0"}
+          </span>
+        </div>
+        <div className="flex justify-between">
+          <span>Annual Interest:</span>
+          <span>
+            ₹
+            {calculatedData.currentValueOfMachine && formData.interestRate
+              ? ((calculatedData.currentValueOfMachine * formData.interestRate) / 100).toLocaleString()
+              : "0"}
+          </span>
+        </div>
+        <div className="flex justify-between font-semibold border-t border-white/30 pt-1 mt-1">
+          <span>Total Annual Cost:</span>
+          <span>
+            ₹
+            {investmentCostPerHour && formData.workingHoursPerDay
+              ? (investmentCostPerHour * formData.workingHoursPerDay * 365).toLocaleString()
+              : "0"}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 
             <Alert className="bg-blue-50 border-blue-200">
               <Info className="w-4 h-4 text-blue-600" />
@@ -291,7 +354,7 @@ export default function InvestmentPage() {
                     errors.machineName,
                     true,
                     "Enter a descriptive name for your machine",
-                    "text"
+                    "text",
                   )}
 
                   {renderInputWithBackgroundImage(
@@ -300,10 +363,11 @@ export default function InvestmentPage() {
                     formData.machineCost,
                     (value) => handleInputChange("machineCost", value),
                     "e.g., 1500000",
-                 "https://5.imimg.com/data5/SELLER/Default/2022/9/VY/SB/BO/115365/16-feet-heavy-duty-lathe-machine-500x500.jpg",                    "₹",
+                    "https://5.imimg.com/data5/SELLER/Default/2022/9/VY/SB/BO/115365/16-feet-heavy-duty-lathe-machine-500x500.jpg",
+                    "₹",
                     errors.machineCost,
                     true,
-                    "Total purchase cost of the machine"
+                    "Total purchase cost of the machine",
                   )}
 
                   {renderInputWithBackgroundImage(
@@ -312,10 +376,11 @@ export default function InvestmentPage() {
                     formData.lifeOfMachine,
                     (value) => handleInputChange("lifeOfMachine", value),
                     "e.g., 10",
-                  "https://5.imimg.com/data5/IOS/Default/2022/6/JB/VT/HW/98322859/product-jpeg-500x500.png",                    "years",
+                    "https://5.imimg.com/data5/IOS/Default/2022/6/JB/VT/HW/98322859/product-jpeg-500x500.png",
+                    "years",
                     errors.lifeOfMachine,
                     true,
-                    "Expected operational life of the machine"
+                    "Expected operational life of the machine",
                   )}
 
                   {renderInputWithBackgroundImage(
@@ -324,10 +389,11 @@ export default function InvestmentPage() {
                     formData.workingHoursPerDay,
                     (value) => handleInputChange("workingHoursPerDay", value),
                     "e.g., 8",
-                    "https://plano-wfm.com/en/wp-content/uploads/sites/44/2023/08/Maximale-Arbeitszeit.jpg",                    "hours",
+                    "https://plano-wfm.com/en/wp-content/uploads/sites/44/2023/08/Maximale-Arbeitszeit.jpg",
+                    "hours",
                     errors.workingHoursPerDay,
                     true,
-                    "Daily operational hours of the machine"
+                    "Daily operational hours of the machine",
                   )}
 
                   {renderInputWithBackgroundImage(
@@ -336,11 +402,11 @@ export default function InvestmentPage() {
                     formData.balanceLifeOfMachine,
                     (value) => handleInputChange("balanceLifeOfMachine", value),
                     "e.g., 8",
-                        "https://www.brookings.edu/wp-content/uploads/2020/11/shutterstock_15284887.jpg?quality=75&w=1500",
+                    "https://www.brookings.edu/wp-content/uploads/2020/11/shutterstock_15284887.jpg?quality=75&w=1500",
                     "years",
                     errors.balanceLifeOfMachine,
                     true,
-                    "Remaining useful life of the machine"
+                    "Remaining useful life of the machine",
                   )}
                 </div>
               </CardContent>
@@ -364,7 +430,7 @@ export default function InvestmentPage() {
                     "%",
                     undefined,
                     false,
-                    "Annual interest rate for financing"
+                    "Annual interest rate for financing",
                   )}
 
                   {renderInputWithBackgroundImage(
@@ -377,7 +443,7 @@ export default function InvestmentPage() {
                     "%",
                     undefined,
                     false,
-                    "Percentage of original value as scrap"
+                    "Percentage of original value as scrap",
                   )}
                 </div>
               </CardContent>
@@ -399,7 +465,7 @@ export default function InvestmentPage() {
                       calculatedData.machineLifeHours,
                       "Hours",
                       "https://t4.ftcdn.net/jpg/03/02/26/55/360_F_302265500_HcxnXEWpFghwA9FCjAWJXGtc1jQ0kyhs.jpg",
-                      `${formData.lifeOfMachine} years × ${formData.workingHoursPerDay} hrs/day × 365 days`
+                      `${formData.lifeOfMachine} years × ${formData.workingHoursPerDay} hrs/day × 365 days`,
                     )}
 
                     {renderCalculationCard(
@@ -407,7 +473,7 @@ export default function InvestmentPage() {
                       calculatedData.currentValueOfMachine,
                       "₹",
                       "https://www.zintilon.com/wp-content/uploads/2024/06/Precision-machining-process-ongoing.jpg",
-                      "After depreciation calculation"
+                      "After depreciation calculation",
                     )}
                   </div>
                 </CardContent>

@@ -29,6 +29,8 @@ export default function OverheadsPage() {
   })
   const [errors, setErrors] = useState<any>({})
   const [machineName, setMachineName] = useState("")
+  const [overheadCostPerHour, setOverheadCostPerHour] = useState<number>(0)
+  const [workingHoursPerDay, setWorkingHoursPerDay] = useState<number>(8)
 
   useEffect(() => {
     const isLoggedIn = localStorage.getItem("isLoggedIn")
@@ -45,8 +47,28 @@ export default function OverheadsPage() {
         setFormData(machineData.overheadsData)
       }
       setMachineName(machineData.machineName)
+      setWorkingHoursPerDay(machineData.investmentData.workingHoursPerDay || 8)
     }
   }, [router])
+
+  useEffect(() => {
+    // Calculate overhead cost per hour using the same logic as calculateFinalMachineHourRate
+    const monthlyWorkingHours = 26 * workingHoursPerDay // 26 working days per month
+
+    const productionSupervisorCostPerHr =
+      formData.productionSupervisorSalaryPerMonth /
+      (monthlyWorkingHours * formData.noOfMachinesHandledByProductionSupervisor)
+    const qualitySupervisorCostPerHr =
+      formData.qualitySupervisorSalaryPerMonth / (monthlyWorkingHours * formData.noOfMachinesHandledByQualitySupervisor)
+    const engineerCostPerHr =
+      formData.engineerSalaryPerMonth / (monthlyWorkingHours * formData.noOfMachinesHandledByEngineer)
+    const adminCostPerHr = formData.adminStaffSalaryPerMonth / (monthlyWorkingHours * 1) // Assuming 1 machine for admin
+
+    const totalOverheadCostPerHour =
+      productionSupervisorCostPerHr + qualitySupervisorCostPerHr + engineerCostPerHr + adminCostPerHr
+
+    setOverheadCostPerHour(totalOverheadCostPerHour)
+  }, [formData, workingHoursPerDay])
 
   const validateForm = () => {
     const newErrors: any = {}
@@ -106,9 +128,9 @@ export default function OverheadsPage() {
     imageUrl: string,
     unit: string,
     error?: string,
-    required: boolean = false,
+    required = false,
     description?: string,
-    min?: number
+    min?: number,
   ) => (
     <div className="space-y-2">
       <div
@@ -121,9 +143,10 @@ export default function OverheadsPage() {
       >
         <div className="space-y-4">
           <Label htmlFor={id} className="text-white font-semibold text-lg">
-            {label} {unit && <span className="text-yellow-300">({unit})</span>} {required && <span className="text-red-300">*</span>}
+            {label} {unit && <span className="text-yellow-300">({unit})</span>}{" "}
+            {required && <span className="text-red-300">*</span>}
           </Label>
-          
+
           <Input
             id={id}
             type="number"
@@ -136,17 +159,21 @@ export default function OverheadsPage() {
               error ? "border-red-400" : "border-white/50"
             } focus:border-white focus:bg-white`}
           />
-          
-          {description && (
-            <p className="text-white/80 text-sm">{description}</p>
-          )}
+
+          {description && <p className="text-white/80 text-sm">{description}</p>}
         </div>
       </div>
       {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
     </div>
   )
 
-  const renderCalculationCard = (title: string, value: number | string, unit: string, imageUrl: string, colorScheme: string = "blue") => {
+  const renderCalculationCard = (
+    title: string,
+    value: number | string,
+    unit: string,
+    imageUrl: string,
+    colorScheme = "blue",
+  ) => {
     return (
       <div
         className="relative p-6 bg-cover bg-center text-white rounded-lg min-h-[200px] flex flex-col justify-end"
@@ -159,7 +186,7 @@ export default function OverheadsPage() {
         <div className="space-y-2">
           <div className="text-white font-medium text-lg">{title}</div>
           <div className="text-3xl font-bold text-white">
-            {typeof value === 'number' ? `₹${value.toFixed(2)}` : value}
+            {typeof value === "number" ? `₹${value.toFixed(2)}` : value}
           </div>
           <div className="text-white/80 text-sm">{unit}</div>
         </div>
@@ -180,7 +207,8 @@ export default function OverheadsPage() {
       formData.noOfMachinesHandledByQualityInspector +
       formData.noOfMachinesHandledByProductionSupervisor +
       formData.noOfMachinesHandledByQualitySupervisor +
-      formData.noOfMachinesHandledByEngineer) / 6
+      formData.noOfMachinesHandledByEngineer) /
+      6,
   )
 
   return (
@@ -203,16 +231,46 @@ export default function OverheadsPage() {
               </div>
             </div>
 
-            <div className="mb-6">
-              <Image
-                src="https://buildertrend.com/wp-content/uploads/2023/03/blog-post_VF.png"
-                alt="Overhead Costs"
-                width={900}
-                height={300}
-                style={{ maxWidth: '900px', maxHeight: '200px', width: '100%', height: 'auto' }}
-                className="rounded-lg shadow-md"
-              />
-            </div>
+  <div className="relative mb-6 rounded-lg overflow-hidden shadow-lg max-w-full h-[200px] md:h-[200px]">
+    {/* Background Image */}
+    <Image
+      src="https://buildertrend.com/wp-content/uploads/2023/03/blog-post_VF.png"
+      alt="Overhead Costs"
+      fill
+      className="object-cover w-full h-full"
+    />
+
+    {/* Overlay Content */}
+    <div className="absolute inset-0 bg-indigo-900 bg-opacity-70 p-4 md:p-6 flex flex-col justify-center">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-white text-sm md:text-base">
+        <div>
+          <h3 className="text-base md:text-lg font-semibold mb-1">Overhead Cost per Hour</h3>
+          <div className="text-2xl md:text-4xl font-bold mb-1">₹{overheadCostPerHour.toFixed(2)}</div>
+          <p>per hour</p>
+        </div>
+        <div className="space-y-1 md:space-y-2">
+          <div className="flex justify-between">
+            <span>Total Overhead Salaries:</span>
+            <span>₹{totalOverheadSalaries.toLocaleString()}/month</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Working Hours/Month:</span>
+            <span>{workingHoursPerDay * 26} hours</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Resource Efficiency:</span>
+            <span>{averageMachinesPerPerson} machines/person</span>
+          </div>
+          <div className="flex justify-between font-semibold border-t border-white/30 pt-1 mt-1">
+            <span>Allocated per Machine:</span>
+            <span>₹{overheadCostPerHour.toFixed(2)}/hour</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
 
             <Alert className="bg-blue-50 border-blue-200">
               <Info className="w-4 h-4 text-blue-600" />
@@ -242,7 +300,7 @@ export default function OverheadsPage() {
                     "₹",
                     undefined,
                     false,
-                    "Oversees production operations"
+                    "Oversees production operations",
                   )}
 
                   {renderInputWithBackgroundImage(
@@ -255,7 +313,7 @@ export default function OverheadsPage() {
                     "₹",
                     undefined,
                     false,
-                    "Manages quality control processes"
+                    "Manages quality control processes",
                   )}
 
                   {renderInputWithBackgroundImage(
@@ -268,7 +326,7 @@ export default function OverheadsPage() {
                     "₹",
                     undefined,
                     false,
-                    "Technical support and maintenance"
+                    "Technical support and maintenance",
                   )}
 
                   {renderInputWithBackgroundImage(
@@ -281,7 +339,7 @@ export default function OverheadsPage() {
                     "₹",
                     undefined,
                     false,
-                    "Overall department management"
+                    "Overall department management",
                   )}
 
                   {renderInputWithBackgroundImage(
@@ -294,7 +352,7 @@ export default function OverheadsPage() {
                     "₹",
                     undefined,
                     false,
-                    "Administrative support staff"
+                    "Administrative support staff",
                   )}
                 </div>
               </CardContent>
@@ -321,7 +379,7 @@ export default function OverheadsPage() {
                     errors.noOfMachinesHandledByOperator,
                     true,
                     "Number of machines one operator handles",
-                    1
+                    1,
                   )}
 
                   {renderInputWithBackgroundImage(
@@ -335,7 +393,7 @@ export default function OverheadsPage() {
                     errors.noOfMachinesHandledByHelper,
                     true,
                     "Number of machines one helper supports",
-                    1
+                    1,
                   )}
 
                   {renderInputWithBackgroundImage(
@@ -349,7 +407,7 @@ export default function OverheadsPage() {
                     errors.noOfMachinesHandledByQualityInspector,
                     true,
                     "Number of machines one QC inspector covers",
-                    1
+                    1,
                   )}
 
                   {renderInputWithBackgroundImage(
@@ -363,7 +421,7 @@ export default function OverheadsPage() {
                     errors.noOfMachinesHandledByProductionSupervisor,
                     true,
                     "Number of machines supervised",
-                    1
+                    1,
                   )}
 
                   {renderInputWithBackgroundImage(
@@ -377,7 +435,7 @@ export default function OverheadsPage() {
                     errors.noOfMachinesHandledByQualitySupervisor,
                     true,
                     "Number of machines under quality supervision",
-                    1
+                    1,
                   )}
 
                   {renderInputWithBackgroundImage(
@@ -391,7 +449,7 @@ export default function OverheadsPage() {
                     errors.noOfMachinesHandledByEngineer,
                     true,
                     "Number of machines per engineer",
-                    1
+                    1,
                   )}
                 </div>
               </CardContent>
@@ -413,7 +471,7 @@ export default function OverheadsPage() {
                       totalOverheadSalaries,
                       "Per month",
                       "https://cdn-icons-png.flaticon.com/512/2921/2921222.png",
-                      "green"
+                      "green",
                     )}
 
                     {renderCalculationCard(
@@ -421,7 +479,7 @@ export default function OverheadsPage() {
                       `${averageMachinesPerPerson} machines/person`,
                       "Average allocation",
                       "https://cdn-icons-png.flaticon.com/512/18500/18500390.png",
-                      "blue"
+                      "blue",
                     )}
                   </div>
 

@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { ArrowLeft, ArrowRight, Wrench, Info } from "lucide-react"
+import { ArrowLeft, ArrowRight, Wrench, Info } from 'lucide-react'
 import type { MachineData } from "@/lib/firebaseService"
 import Navbar from "@/components/navbar"
 import Image from "next/image"
@@ -22,6 +22,8 @@ export default function ToolsWagesPage() {
   })
   const [errors, setErrors] = useState<any>({})
   const [machineName, setMachineName] = useState("")
+  const [toolCostPerHour, setToolCostPerHour] = useState<number>(0)
+  const [workingHoursPerDay, setWorkingHoursPerDay] = useState<number>(8)
 
   useEffect(() => {
     const isLoggedIn = localStorage.getItem("isLoggedIn")
@@ -38,8 +40,15 @@ export default function ToolsWagesPage() {
         setFormData(machineData.toolsWagesData)
       }
       setMachineName(machineData.machineName)
+      setWorkingHoursPerDay(machineData.investmentData.workingHoursPerDay || 8)
     }
   }, [router])
+
+  useEffect(() => {
+    // Calculate tool cost per hour using the same logic as calculateFinalMachineHourRate
+    const costPerHour = formData.averageToolCostPerMonth / (workingHoursPerDay * 26) // 26 working days per month
+    setToolCostPerHour(costPerHour)
+  }, [formData, workingHoursPerDay])
 
   const validateForm = () => {
     const newErrors: any = {}
@@ -179,16 +188,47 @@ export default function ToolsWagesPage() {
               </div>
             </div>
 
-            <div className="mb-6">
-              <Image
-                src="https://blog.allgeo.com/wp-content/uploads/2024/12/How-To-Calculate-Labor-Cost-In-Manufacturing_.jpg"
-                alt="Labor Cost Calculation"
-                width={900}
-                height={300}
-                style={{ maxWidth: '900px', maxHeight: '200px', width: '100%', height: 'auto' }}
-                className="rounded-lg shadow-md"
-              />
-            </div>
+            {/* Tool Cost Per Hour Display */}
+
+  <div className="relative mb-6 rounded-lg overflow-hidden shadow-lg max-w-full h-[200px] md:h-[200px]">
+    {/* Background Image */}
+    <Image
+      src="https://blog.allgeo.com/wp-content/uploads/2024/12/How-To-Calculate-Labor-Cost-In-Manufacturing_.jpg"
+      alt="Labor Cost Calculation"
+      fill
+      className="object-cover w-full h-full"
+    />
+
+    {/* Overlay Content */}
+    <div className="absolute inset-0 bg-orange-900 bg-opacity-70 p-4 md:p-6 flex flex-col justify-center">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-white text-sm md:text-base">
+        <div>
+          <h3 className="text-base md:text-lg font-semibold mb-1">Tool Cost per Hour</h3>
+          <div className="text-2xl md:text-4xl font-bold mb-1">₹{toolCostPerHour.toFixed(2)}</div>
+          <p>per hour</p>
+        </div>
+        <div className="space-y-1 md:space-y-2">
+          <div className="flex justify-between">
+            <span>Monthly Tool Cost:</span>
+            <span>₹{formData.averageToolCostPerMonth.toLocaleString()}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Working Days/Month:</span>
+            <span>26 days</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Working Hours/Day:</span>
+            <span>{workingHoursPerDay} hours</span>
+          </div>
+          <div className="flex justify-between font-semibold border-t border-white/30 pt-1 mt-1">
+            <span>Total Monthly Hours:</span>
+            <span>{workingHoursPerDay * 26} hours</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 
             <Alert className="bg-blue-50 border-blue-200">
               <Info className="w-4 h-4 text-blue-600" />
