@@ -1,7 +1,7 @@
 import emailjs from "@emailjs/browser"
 
 // Initialize EmailJS with your public key
-emailjs.init("WZawqmV08XgvK1Pkd")
+emailjs.init("NpytlYgOex3URxtmB")
 
 export const generateOTP = (): string => {
   return Math.floor(100000 + Math.random() * 900000).toString()
@@ -46,8 +46,8 @@ export const sendOTPEmail = async (email: string, otp: string, userName = "User"
 
     // Try sending with emailjs.send
     const response = await emailjs.send(
-      "service_t8tsvi8", 
-      "template_g0k8tsq", 
+      "service_s7efo4q", 
+      "template_4h6ys46", 
       templateParams
     )
 

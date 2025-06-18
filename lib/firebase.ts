@@ -3,14 +3,13 @@ import { getFirestore } from "firebase/firestore"
 import { getAnalytics } from "firebase/analytics"
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDGvtDcFhE9gSQUeKTq8MwaqSuxFHjC13U",
-  authDomain: "pugalfolio.firebaseapp.com",
-  databaseURL: "https://pugalfolio-default-rtdb.firebaseio.com",
-  projectId: "pugalfolio",
-  storageBucket: "pugalfolio.firebasestorage.app",
-  messagingSenderId: "17589199201",
-  appId: "1:17589199201:web:3b2e7f0fd940d812446520",
-  measurementId: "G-THXRGHNLYF"
+  apiKey: "AIzaSyDYH53hJzsMVtggnMh9GwsqWg4AKWWo_-I",
+  authDomain: "mhrcalc.firebaseapp.com",
+  projectId: "mhrcalc",
+  storageBucket: "mhrcalc.firebasestorage.app",
+  messagingSenderId: "530441998915",
+  appId: "1:530441998915:web:70f12c59c6ec69b86a7af6",
+  measurementId: "G-CSS3LSY3Z9"
 };
 
 // Initialize Firebase only if it hasn't been initialized
