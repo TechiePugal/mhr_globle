@@ -9,7 +9,8 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "Machine Hour Rate Calculator",
   description: "Professional cost calculator for manufacturing machines",
-    generator: 'v0.dev'
+  generator: "v0.dev",
+  // No need to manually set icons here
 }
 
 export default function RootLayout({
@@ -19,6 +20,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head /> {/* Important: next/head auto-picks favicon.ico */}
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
           {children}
