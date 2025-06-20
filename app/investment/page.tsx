@@ -437,7 +437,7 @@ export default function InvestmentPage() {
 
                   {renderInputWithBackgroundImage(
                     "scrapRate",
-                    "Scrap Rate",
+                    "Resale value",
                     formData.scrapRate,
                     (value) => handleInputChange("scrapRate", value),
                     "e.g., 10",

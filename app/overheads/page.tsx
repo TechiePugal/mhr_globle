@@ -193,7 +193,7 @@ export default function OverheadsPage() {
           style={{
             backgroundImage: `url(${imageUrl})`,
             backgroundBlendMode: "overlay",
-            backgroundColor: "",
+            // backgroundColor: "rgba(0, 0, 0, 0.5)",
           }}
         ></div>
 
@@ -238,7 +238,7 @@ export default function OverheadsPage() {
         style={{
           backgroundImage: `url(${imageUrl})`,
           backgroundBlendMode: "overlay",
-          backgroundColor: "",
+          backgroundColor: "rgba(0, 0, 0, 0.5)",
         }}
       >
         <div className="space-y-2">
