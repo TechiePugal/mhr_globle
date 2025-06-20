@@ -250,7 +250,7 @@ export default function SpaceExpensesPage() {
           style={{
             backgroundImage: `url(${imageUrl})`,
             backgroundBlendMode: "overlay",
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            // backgroundColor: "rgba(0, 0, 0, 0.5)",
           }}
         ></div>
 
