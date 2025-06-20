@@ -12,6 +12,8 @@ import type { MachineData } from "@/lib/firebaseService"
 import Navbar from "@/components/navbar"
 import { calculateTotalCostPerHour } from "@/lib/total-cost-calculator"
 import TotalCostDisplay from "@/components/total-cost-display"
+import { saveMachine } from "@/lib/firebaseService"
+import MachineNamePopup from "@/components/machine-name-popup"
 
 export default function SpaceExpensesPage() {
   const router = useRouter()
@@ -27,6 +29,8 @@ export default function SpaceExpensesPage() {
   const [spaceCostPerHour, setSpaceCostPerHour] = useState<number>(0)
   const [workingHoursPerDay, setWorkingHoursPerDay] = useState<number>(8)
   const [totalCostBreakdown, setTotalCostBreakdown] = useState<any>({})
+  const [showMachineNamePopup, setShowMachineNamePopup] = useState(false)
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     const isLoggedIn = localStorage.getItem("isLoggedIn")
@@ -48,20 +52,24 @@ export default function SpaceExpensesPage() {
   }, [router])
 
   useEffect(() => {
-    if (formData.factoryRentPerMonth > 0 && formData.factorySpaceInSqFt > 0 && formData.spaceOccupiedByMachine > 0) {
-      // Calculate space cost per hour using the same logic as calculateFinalMachineHourRate
-      const machineSpaceCost =
-        formData.factoryRentPerMonth * 12 * (formData.spaceOccupiedByMachine / formData.factorySpaceInSqFt)
-      const commonSpaceCost =
-        formData.numberOfMachinesInFactory > 0
-          ? (formData.factoryRentPerMonth * 12 * (formData.commonSpaceInSqFt / formData.factorySpaceInSqFt)) /
-            formData.numberOfMachinesInFactory
-          : 0
-      const annualSpaceCost = machineSpaceCost + commonSpaceCost
-      const costPerHour = annualSpaceCost / (workingHoursPerDay * 365)
-
-      setSpaceCostPerHour(costPerHour)
+    // Calculate space cost per hour directly
+    const calculateSpaceCostPerHour = () => {
+      if (formData.factoryRentPerMonth > 0 && formData.factorySpaceInSqFt > 0 && formData.spaceOccupiedByMachine > 0) {
+        const machineSpaceCost =
+          formData.factoryRentPerMonth * 12 * (formData.spaceOccupiedByMachine / formData.factorySpaceInSqFt)
+        const commonSpaceCost =
+          formData.numberOfMachinesInFactory > 0
+            ? (formData.factoryRentPerMonth * 12 * (formData.commonSpaceInSqFt / formData.factorySpaceInSqFt)) /
+              formData.numberOfMachinesInFactory
+            : 0
+        const annualSpaceCost = machineSpaceCost + commonSpaceCost
+        return annualSpaceCost / (workingHoursPerDay * 365)
+      }
+      return 0
     }
+
+    const costPerHour = calculateSpaceCostPerHour()
+    setSpaceCostPerHour(costPerHour)
   }, [formData, workingHoursPerDay])
 
   useEffect(() => {
@@ -112,18 +120,111 @@ export default function SpaceExpensesPage() {
     }
   }
 
-  const saveAndContinue = () => {
+  const saveAndContinue = async () => {
     if (!validateForm()) return
 
-    // Load existing data and merge
-    const existingData = localStorage.getItem("currentMachine")
-    if (existingData) {
-      const machineData: MachineData = JSON.parse(existingData)
-      machineData.spaceData = formData
-      localStorage.setItem("currentMachine", JSON.stringify(machineData))
+    // Check if machine name exists
+    if (!machineName.trim()) {
+      setShowMachineNamePopup(true)
+      return
     }
 
-    router.push("/power-consumption")
+    await saveToDatabase()
+  }
+
+  const saveToDatabase = async () => {
+    setSaving(true)
+    try {
+      // Load existing data and merge
+      const existingData = localStorage.getItem("currentMachine")
+      let machineData: MachineData
+
+      if (existingData) {
+        machineData = JSON.parse(existingData)
+        machineData.spaceData = formData
+      } else {
+        // Create new machine data structure
+        machineData = {
+          machineName,
+          spaceData: formData,
+          investmentData: {
+            machineCost: 0,
+            lifeOfMachine: 0,
+            workingHoursPerDay: 0,
+            balanceLifeOfMachine: 0,
+            interestRate: 0,
+            scrapRate: 0,
+          },
+          powerData: {
+            machinePower: 0,
+            effectiveRunningTimeOfMotors: 0,
+            powerOfFan: 0,
+            powerOfLight: 0,
+            numberOfFansAroundMachine: 0,
+            numberOfLightsAroundMachine: 0,
+            compressorPower: 0,
+            numberOfMachinesConnectedWithCompressor: 0,
+            effectiveRunningTimeOfCompressor: 0,
+            powerOfOtherElectricalEquipment: 0,
+            utilization: 0,
+            ebUnitRate: 0,
+            dieselConsumptionByGenset: 0,
+            dieselCostPerLitre: 0,
+            gensetPower: 0,
+            electricityUnitRate: 0,
+          },
+          consumablesData: {
+            coolantOilTopUpPerMonth: 0,
+            coolantOilCostPerLitre: 0,
+            wasteUsagePerMonth: 0,
+            costOfWastePerKg: 0,
+            monthlyMaintenanceCost: 0,
+            annualMaintenanceCost: 0,
+            otherConsumablesPerMonth: 0,
+          },
+          toolsWagesData: {
+            averageToolCostPerMonth: 0,
+            operatorSalaryPerMonth: 0,
+            helperSalaryPerMonth: 0,
+            qualityInspectorSalaryPerMonth: 0,
+          },
+          overheadsData: {
+            productionSupervisorSalaryPerMonth: 0,
+            qualitySupervisorSalaryPerMonth: 0,
+            engineerSalaryPerMonth: 0,
+            managerSalaryPerMonth: 0,
+            adminStaffSalaryPerMonth: 0,
+            noOfMachinesHandledByOperator: 1,
+            noOfMachinesHandledByHelper: 1,
+            noOfMachinesHandledByQualityInspector: 1,
+            noOfMachinesHandledByProductionSupervisor: 1,
+            noOfMachinesHandledByQualitySupervisor: 1,
+            noOfMachinesHandledByEngineer: 1,
+          },
+        }
+      }
+
+      // Save to Firebase
+      const id = await saveMachine(machineData)
+      machineData.id = id
+
+      // Update local storage
+      localStorage.setItem("currentMachine", JSON.stringify(machineData))
+
+      router.push("/power-consumption")
+    } catch (error) {
+      console.error("Error saving machine:", error)
+      alert("Error saving data. Please try again.")
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleMachineNameSave = (name: string) => {
+    setMachineName(name)
+    setShowMachineNamePopup(false)
+    // Trigger save after setting machine name
+    setTimeout(() => saveToDatabase(), 100)
   }
 
   const goBack = () => {
@@ -214,46 +315,46 @@ export default function SpaceExpensesPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar title="Space Expenses" currentStep={2} totalSteps={7} />
+      <Navbar title="Space Expenses" currentStep={2} totalSteps={6} />
 
       <main className="md:ml-64 pt-4">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           {/* Header */}
-<div className="sticky top-10 z-20 bg-white border-b border-gray-200">
-  <div className="px-4 py-3">
-    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0 sm:space-x-6">
-      {/* Icon and Text */}
-      <div className="flex items-center space-x-4">
-        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-          <Building className="w-5 h-5 text-blue-600" />
-        </div>
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Space Expenses</h1>
-          <p className="text-sm text-gray-600">
-            Enter factory space details for <span className="font-medium">{machineName}</span>
-          </p>
-        </div>
-      </div>
+          <div className="sticky top-10 z-20 bg-white border-b border-gray-200">
+            <div className="px-4 py-3">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0 sm:space-x-6">
+                {/* Icon and Text */}
+                <div className="flex items-center space-x-4">
+                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <Building className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Space Expenses</h1>
+                    <p className="text-sm text-gray-600">
+                      Enter factory space details for <span className="font-medium">{machineName}</span>
+                    </p>
+                  </div>
+                </div>
 
-      {/* Space Cost Per Hour Display */}
-      <div className="w-full sm:w-auto">
-        <TotalCostDisplay
-          totalCost={totalCostBreakdown}
-          currentStep={2}
-          machineName={machineName || "Machine"}
-        />
-      </div>
-    </div>
-  </div>
+                {/* Total Cost Display */}
+                <div className="w-full sm:w-auto">
+                  <TotalCostDisplay
+                    totalCost={totalCostBreakdown}
+                    currentStep={2}
+                    machineName={machineName || "Machine"}
+                  />
+                </div>
+              </div>
+            </div>
 
-  {/* Optional Alert below Header */}
-  <Alert className="bg-blue-50 border-t border-blue-200">
-    <Info className="w-4 h-4 text-blue-600" />
-    <AlertDescription className="text-blue-800">
-      This information will be used to calculate the space cost per hour for your machine.
-    </AlertDescription>
-  </Alert>
-</div>
+            {/* Optional Alert below Header */}
+            <Alert className="bg-blue-50 border-t border-blue-200">
+              <Info className="w-4 h-4 text-blue-600" />
+              <AlertDescription className="text-blue-800">
+                This information will be used to calculate the space cost per hour for your machine.
+              </AlertDescription>
+            </Alert>
+          </div>
 
           <div className="space-y-8">
             {/* Factory Space Information */}
@@ -377,6 +478,7 @@ export default function SpaceExpensesPage() {
               <Button
                 onClick={saveAndContinue}
                 disabled={
+                  saving ||
                   !formData.factoryRentPerMonth ||
                   !formData.factorySpaceInSqFt ||
                   !formData.spaceOccupiedByMachine ||
@@ -384,12 +486,17 @@ export default function SpaceExpensesPage() {
                 }
                 className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
               >
-                Save & Continue
+                {saving ? "Saving..." : "Save & Continue"}
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </div>
           </div>
         </div>
+        <MachineNamePopup
+          isOpen={showMachineNamePopup}
+          onSave={handleMachineNameSave}
+          onCancel={() => setShowMachineNamePopup(false)}
+        />
       </main>
     </div>
   )

@@ -12,9 +12,9 @@ import type { MachineData } from "@/lib/firebaseService"
 import { calculateInvestmentData } from "@/lib/calculations"
 import Navbar from "@/components/navbar"
 import Link from "next/link"
-import Image from "next/image"
 import { calculateTotalCostPerHour } from "@/lib/total-cost-calculator"
-import TotalCostDisplay from "../../components/total-cost-display"
+import TotalCostDisplay from "@/components/total-cost-display"
+import { saveMachine } from "@/lib/firebaseService"
 
 export default function InvestmentPage() {
   const router = useRouter()
@@ -31,6 +31,7 @@ export default function InvestmentPage() {
   const [investmentCostPerHour, setInvestmentCostPerHour] = useState<number>(0)
   const [errors, setErrors] = useState<any>({})
   const [totalCostBreakdown, setTotalCostBreakdown] = useState<any>({})
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     const isLoggedIn = localStorage.getItem("isLoggedIn")
@@ -48,21 +49,24 @@ export default function InvestmentPage() {
     }
   }, [router])
 
-  useEffect(() => {
+  // Calculate investment cost per hour
+  const calculateInvestmentCostPerHour = () => {
     if (formData.machineCost > 0 && formData.lifeOfMachine > 0 && formData.workingHoursPerDay > 0) {
       const calculated = calculateInvestmentData(formData)
       setCalculatedData(calculated)
 
-      // Calculate investment cost per hour using the same logic as calculateFinalMachineHourRate
       const annualDepreciation =
         (formData.machineCost - (formData.machineCost * formData.scrapRate) / 100) / formData.lifeOfMachine
-
       const annualInterest = (calculated.currentValueOfMachine * formData.interestRate) / 100
       const annualInvestmentCost = annualDepreciation + annualInterest
-      const investmentCostPerHour = annualInvestmentCost / (formData.workingHoursPerDay * 365)
-
-      setInvestmentCostPerHour(investmentCostPerHour)
+      return annualInvestmentCost / (formData.workingHoursPerDay * 365)
     }
+    return 0
+  }
+
+  useEffect(() => {
+    const costPerHour = calculateInvestmentCostPerHour()
+    setInvestmentCostPerHour(costPerHour)
   }, [formData])
 
   useEffect(() => {
@@ -72,14 +76,14 @@ export default function InvestmentPage() {
     if (savedData) {
       machineData = JSON.parse(savedData)
     }
-    
+
     // Update with current form data
     const currentMachineData = {
       ...machineData,
       machineName,
-      investmentData: { ...formData, ...calculatedData }
+      investmentData: { ...formData, ...calculatedData },
     }
-    
+
     const totalCost = calculateTotalCostPerHour(currentMachineData)
     setTotalCostBreakdown(totalCost)
   }, [formData, calculatedData, machineName])
@@ -120,79 +124,91 @@ export default function InvestmentPage() {
     }
   }
 
-  const saveAndContinue = () => {
+  const saveAndContinue = async () => {
     if (!validateForm()) return
 
-    const machineData: Partial<MachineData> = {
-      machineName,
-      investmentData: { ...formData, ...calculatedData },
-      spaceData: {
-        factoryRentPerMonth: 0,
-        factorySpaceInSqFt: 0,
-        spaceOccupiedByMachine: 0,
-        numberOfMachinesInFactory: 0,
-        commonSpaceInSqFt: 0,
-      },
-      powerData: {
-        machinePower: 0,
-        effectiveRunningTimeOfMotors: 0,
-        powerOfFan: 0,
-        powerOfLight: 0,
-        numberOfFansAroundMachine: 0,
-        numberOfLightsAroundMachine: 0,
-        compressorPower: 0,
-        numberOfMachinesConnectedWithCompressor: 0,
-        effectiveRunningTimeOfCompressor: 0,
-        powerOfOtherElectricalEquipment: 0,
-        utilization: 0,
-        ebUnitRate: 0,
-        dieselConsumptionByGenset: 0,
-        dieselCostPerLitre: 0,
-        gensetPower: 0,
-        electricityUnitRate: 0,
-      },
-      consumablesData: {
-        coolantOilTopUpPerMonth: 0,
-        coolantOilCostPerLitre: 0,
-        wasteUsagePerMonth: 0,
-        costOfWastePerKg: 0,
-        monthlyMaintenanceCost: 0,
-        annualMaintenanceCost: 0,
-        otherConsumablesPerMonth: 0,
-      },
-      toolsWagesData: {
-        averageToolCostPerMonth: 0,
-        operatorSalaryPerMonth: 0,
-        helperSalaryPerMonth: 0,
-        qualityInspectorSalaryPerMonth: 0,
-      },
-      overheadsData: {
-        productionSupervisorSalaryPerMonth: 0,
-        qualitySupervisorSalaryPerMonth: 0,
-        engineerSalaryPerMonth: 0,
-        managerSalaryPerMonth: 0,
-        adminStaffSalaryPerMonth: 0,
-        noOfMachinesHandledByOperator: 1,
-        noOfMachinesHandledByHelper: 1,
-        noOfMachinesHandledByQualityInspector: 1,
-        noOfMachinesHandledByProductionSupervisor: 1,
-        noOfMachinesHandledByQualitySupervisor: 1,
-        noOfMachinesHandledByEngineer: 1,
-      },
+    setSaving(true)
+    try {
+      const machineData: Partial<MachineData> = {
+        machineName,
+        investmentData: { ...formData, ...calculatedData },
+        spaceData: {
+          factoryRentPerMonth: 0,
+          factorySpaceInSqFt: 0,
+          spaceOccupiedByMachine: 0,
+          numberOfMachinesInFactory: 0,
+          commonSpaceInSqFt: 0,
+        },
+        powerData: {
+          machinePower: 0,
+          effectiveRunningTimeOfMotors: 0,
+          powerOfFan: 0,
+          powerOfLight: 0,
+          numberOfFansAroundMachine: 0,
+          numberOfLightsAroundMachine: 0,
+          compressorPower: 0,
+          numberOfMachinesConnectedWithCompressor: 0,
+          effectiveRunningTimeOfCompressor: 0,
+          powerOfOtherElectricalEquipment: 0,
+          utilization: 0,
+          ebUnitRate: 0,
+          dieselConsumptionByGenset: 0,
+          dieselCostPerLitre: 0,
+          gensetPower: 0,
+          electricityUnitRate: 0,
+        },
+        consumablesData: {
+          coolantOilTopUpPerMonth: 0,
+          coolantOilCostPerLitre: 0,
+          wasteUsagePerMonth: 0,
+          costOfWastePerKg: 0,
+          monthlyMaintenanceCost: 0,
+          annualMaintenanceCost: 0,
+          otherConsumablesPerMonth: 0,
+        },
+        toolsWagesData: {
+          averageToolCostPerMonth: 0,
+          operatorSalaryPerMonth: 0,
+          helperSalaryPerMonth: 0,
+          qualityInspectorSalaryPerMonth: 0,
+        },
+        overheadsData: {
+          productionSupervisorSalaryPerMonth: 0,
+          qualitySupervisorSalaryPerMonth: 0,
+          engineerSalaryPerMonth: 0,
+          managerSalaryPerMonth: 0,
+          adminStaffSalaryPerMonth: 0,
+          noOfMachinesHandledByOperator: 1,
+          noOfMachinesHandledByHelper: 1,
+          noOfMachinesHandledByQualityInspector: 1,
+          noOfMachinesHandledByProductionSupervisor: 1,
+          noOfMachinesHandledByQualitySupervisor: 1,
+          noOfMachinesHandledByEngineer: 1,
+        },
+      }
+
+      // Load existing data and merge
+      const existingData = localStorage.getItem("currentMachine")
+      if (existingData) {
+        const existing: MachineData = JSON.parse(existingData)
+        Object.assign(machineData, existing)
+      }
+
+      machineData.machineName = machineName
+      machineData.investmentData = { ...formData, ...calculatedData }
+
+      // Save to Firebase
+      const id = await saveMachine(machineData as MachineData)
+      ;(machineData as MachineData).id = id
+
+      localStorage.setItem("currentMachine", JSON.stringify(machineData))
+      router.push("/space-expenses")
+    } catch (error) {
+      console.error("Error saving machine:", error)
+      alert("Error saving data. Please try again.")
+    } finally {
+      setSaving(false)
     }
-
-    // Load existing data and merge
-    const existingData = localStorage.getItem("currentMachine")
-    if (existingData) {
-      const existing: MachineData = JSON.parse(existingData)
-      Object.assign(machineData, existing)
-    }
-
-    machineData.machineName = machineName
-    machineData.investmentData = { ...formData, ...calculatedData }
-
-    localStorage.setItem("currentMachine", JSON.stringify(machineData))
-    router.push("/space-expenses")
   }
 
   const renderInputWithBackgroundImage = (
@@ -208,44 +224,43 @@ export default function InvestmentPage() {
     description?: string,
     type = "number",
   ) => (
-<div className="space-y-2">
-  <div className="rounded-lg overflow-hidden bg-black-50 shadow-lg flex flex-col">
-    {/* Top: Image Banner */}
-    <div
-      className="h-40 bg-cover bg-center"
-      style={{
-        backgroundImage: `url(${imageUrl})`,
-        backgroundBlendMode: "overlay",
-        backgroundColor: "",
-      }}
-    ></div>
+    <div className="space-y-2">
+      <div className="rounded-lg overflow-hidden bg-white shadow-lg flex flex-col">
+        {/* Top: Image Banner */}
+        <div
+          className="h-40 bg-cover bg-center"
+          style={{
+            backgroundImage: `url(${imageUrl})`,
+            backgroundBlendMode: "overlay",
+            backgroundColor: "",
+          }}
+        ></div>
 
-    {/* Bottom: Form Section */}
-    <div className="p-6 space-y-4">
-      <Label htmlFor={id} className="text-gray-900 font-semibold text-lg">
-        {label} {unit && <span className="text-yellow-600">({unit})</span>}{" "}
-        {required && <span className="text-red-600">*</span>}
-      </Label>
+        {/* Bottom: Form Section */}
+        <div className="p-6 space-y-4">
+          <Label htmlFor={id} className="text-gray-900 font-semibold text-lg">
+            {label} {unit && <span className="text-yellow-600">({unit})</span>}{" "}
+            {required && <span className="text-red-600">*</span>}
+          </Label>
 
-      <Input
-        id={id}
-        type={type}
-        step={type === "number" ? "0.01" : undefined}
-        value={value || ""}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className={`h-12 text-lg font-medium border text-gray-900 placeholder:text-gray-600 ${
-          error ? "border-red-400" : "border-gray-300"
-        } focus:border-blue-500 focus:ring-2 focus:ring-blue-200`}
-      />
+          <Input
+            id={id}
+            type={type}
+            step={type === "number" ? "0.01" : undefined}
+            value={value || ""}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={placeholder}
+            className={`h-12 text-lg font-medium border text-gray-900 placeholder:text-gray-600 ${
+              error ? "border-red-400" : "border-gray-300"
+            } focus:border-blue-500 focus:ring-2 focus:ring-blue-200`}
+          />
 
-      {description && <p className="text-gray-600 text-sm">{description}</p>}
+          {description && <p className="text-gray-600 text-sm">{description}</p>}
+        </div>
+      </div>
+
+      {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
     </div>
-  </div>
-
-  {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
-</div>
-
   )
 
   const renderCalculationCard = (
@@ -282,47 +297,44 @@ export default function InvestmentPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar title="Investment Details" currentStep={1} totalSteps={7} />
+      <Navbar title="Investment Details" currentStep={1} totalSteps={6} />
 
       <main className="md:ml-64 pt-4">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           {/* Header */}
-<div className="sticky top-10 z-20 bg-white border-b border-gray-200">
-  <div className="px-4 py-3">
-    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0 sm:space-x-6">
-      {/* Icon and Text */}
-      <div className="flex items-center space-x-4">
-        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-          <Calculator className="w-5 h-5 text-blue-600" />
-        </div>
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Investment Details</h1>
-          <p className="text-sm text-gray-600">
-            Enter the basic investment information for your machine
-          </p>
-        </div>
-      </div>
+          <div className="sticky top-10 z-20 bg-white border-b border-gray-200">
+            <div className="px-4 py-3">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0 sm:space-x-6">
+                {/* Icon and Text */}
+                <div className="flex items-center space-x-4">
+                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <Calculator className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Investment Details</h1>
+                    <p className="text-sm text-gray-600">Enter the basic investment information for your machine</p>
+                  </div>
+                </div>
 
-      {/* Total Cost Display Component */}
-      <div className="w-full sm:w-auto">
-        <TotalCostDisplay
-          totalCost={totalCostBreakdown}
-          currentStep={1}
-          machineName={machineName || "Machine"}
-        />
-      </div>
-    </div>
-  </div>
+                {/* Total Cost Display Component */}
+                <div className="w-full sm:w-auto">
+                  <TotalCostDisplay
+                    totalCost={totalCostBreakdown}
+                    currentStep={1}
+                    machineName={machineName || "Machine"}
+                  />
+                </div>
+              </div>
+            </div>
 
-  {/* Optional Alert below Header */}
-  <Alert className="bg-blue-50 border-t border-blue-200">
-    <Info className="w-4 h-4 text-blue-600" />
-    <AlertDescription className="text-blue-800">
-      This information will be used to calculate depreciation, interest costs, and machine life hours.
-    </AlertDescription>
-  </Alert>
-</div>
-
+            {/* Optional Alert below Header */}
+            <Alert className="bg-blue-50 border-t border-blue-200">
+              <Info className="w-4 h-4 text-blue-600" />
+              <AlertDescription className="text-blue-800">
+                This information will be used to calculate depreciation, interest costs, and machine life hours.
+              </AlertDescription>
+            </Alert>
+          </div>
 
           <div className="space-y-8">
             {/* Basic Information */}
@@ -449,7 +461,7 @@ export default function InvestmentPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {renderCalculationCard(
                       "Machine Life",
                       calculatedData.machineLifeHours,
@@ -464,6 +476,14 @@ export default function InvestmentPage() {
                       "₹",
                       "https://www.zintilon.com/wp-content/uploads/2024/06/Precision-machining-process-ongoing.jpg",
                       "After depreciation calculation",
+                    )}
+
+                    {renderCalculationCard(
+                      "Investment Cost",
+                      investmentCostPerHour.toFixed(2),
+                      "₹/hour",
+                      "https://cdn.corporatefinanceinstitute.com/assets/income-investing-1024x576.jpeg",
+                      "Hourly investment cost including depreciation and interest",
                     )}
                   </div>
                 </CardContent>
@@ -480,10 +500,10 @@ export default function InvestmentPage() {
               </Link>
               <Button
                 onClick={saveAndContinue}
-                disabled={!machineName || !formData.machineCost || !formData.lifeOfMachine}
+                disabled={saving || !machineName || !formData.machineCost || !formData.lifeOfMachine}
                 className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
               >
-                Save & Continue
+                {saving ? "Saving..." : "Save & Continue"}
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </div>

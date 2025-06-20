@@ -12,6 +12,8 @@ import type { MachineData } from "@/lib/firebaseService"
 import Navbar from "@/components/navbar"
 import { calculateTotalCostPerHour } from "@/lib/total-cost-calculator"
 import TotalCostDisplay from "@/components/total-cost-display"
+import { saveMachine } from "@/lib/firebaseService"
+import MachineNamePopup from "@/components/machine-name-popup"
 
 export default function ConsumablesPage() {
   const router = useRouter()
@@ -29,6 +31,8 @@ export default function ConsumablesPage() {
   const [consumablesCostPerHour, setConsumablesCostPerHour] = useState<number>(0)
   const [workingHoursPerDay, setWorkingHoursPerDay] = useState<number>(8)
   const [totalCostBreakdown, setTotalCostBreakdown] = useState<any>({})
+  const [showMachineNamePopup, setShowMachineNamePopup] = useState(false)
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     const isLoggedIn = localStorage.getItem("isLoggedIn")
@@ -98,18 +102,48 @@ export default function ConsumablesPage() {
     }
   }
 
-  const saveAndContinue = () => {
+  const saveAndContinue = async () => {
     if (!validateForm()) return
 
-    // Load existing data and merge
-    const existingData = localStorage.getItem("currentMachine")
-    if (existingData) {
-      const machineData: MachineData = JSON.parse(existingData)
-      machineData.consumablesData = formData
-      localStorage.setItem("currentMachine", JSON.stringify(machineData))
+    // Check if machine name exists
+    if (!machineName.trim()) {
+      setShowMachineNamePopup(true)
+      return
     }
 
-    router.push("/tools-wages")
+    await saveToDatabase()
+  }
+
+  const saveToDatabase = async () => {
+    setSaving(true)
+    try {
+      // Load existing data and merge
+      const existingData = localStorage.getItem("currentMachine")
+      if (existingData) {
+        const machineData: MachineData = JSON.parse(existingData)
+        machineData.consumablesData = formData
+
+        // Save to Firebase
+        const id = await saveMachine(machineData)
+        machineData.id = id
+
+        localStorage.setItem("currentMachine", JSON.stringify(machineData))
+      }
+
+      router.push("/tools-wages")
+    } catch (error) {
+      console.error("Error saving machine:", error)
+      alert("Error saving data. Please try again.")
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleMachineNameSave = (name: string) => {
+    setMachineName(name)
+    setShowMachineNamePopup(false)
+    // Trigger save after setting machine name
+    setTimeout(() => saveToDatabase(), 100)
   }
 
   const goBack = () => {
@@ -208,42 +242,42 @@ export default function ConsumablesPage() {
       <main className="md:ml-64 pt-4">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           {/* Header */}
-<div className="sticky top-10 z-20 bg-white border-b border-gray-200">
-  <div className="px-4 py-3">
-    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0 sm:space-x-6">
-      {/* Icon and Text */}
-      <div className="flex items-center space-x-4">
-        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-          <Package className="w-5 h-5 text-blue-600" />
-        </div>
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Consumables & Maintenance</h1>
-          <p className="text-sm text-gray-600">
-            Enter consumables and maintenance costs for <span className="font-medium">{machineName}</span>
-          </p>
-        </div>
-      </div>
+          <div className="sticky top-10 z-20 bg-white border-b border-gray-200">
+            <div className="px-4 py-3">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0 sm:space-x-6">
+                {/* Icon and Text */}
+                <div className="flex items-center space-x-4">
+                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <Package className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Consumables & Maintenance</h1>
+                    <p className="text-sm text-gray-600">
+                      Enter consumables and maintenance costs for <span className="font-medium">{machineName}</span>
+                    </p>
+                  </div>
+                </div>
 
-      {/* Cost Display */}
-      <div className="w-full sm:w-auto">
-        <TotalCostDisplay
-          totalCost={totalCostBreakdown}
-          currentStep={4}
-          machineName={machineName || "Machine"}
-        />
-      </div>
-    </div>
-  </div>
+                {/* Cost Display */}
+                <div className="w-full sm:w-auto">
+                  <TotalCostDisplay
+                    totalCost={totalCostBreakdown}
+                    currentStep={4}
+                    machineName={machineName || "Machine"}
+                  />
+                </div>
+              </div>
+            </div>
 
-  {/* Optional Alert below Header */}
-  <Alert className="bg-blue-50 border-t border-blue-200">
-    <Info className="w-4 h-4 text-blue-600" />
-    <AlertDescription className="text-blue-800">
-      This information will be used to calculate the consumables and maintenance cost per hour for your machine.
-    </AlertDescription>
-  </Alert>
-</div>
-
+            {/* Optional Alert below Header */}
+            <Alert className="bg-blue-50 border-t border-blue-200">
+              <Info className="w-4 h-4 text-blue-600" />
+              <AlertDescription className="text-blue-800">
+                This information will be used to calculate the consumables and maintenance cost per hour for your
+                machine.
+              </AlertDescription>
+            </Alert>
+          </div>
 
           <div className="space-y-8">
             {/* Coolant & Waste */}
@@ -400,14 +434,20 @@ export default function ConsumablesPage() {
               <Button
                 onClick={saveAndContinue}
                 className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                disabled={saving}
               >
-                Save & Continue
+                {saving ? "Saving..." : "Save & Continue"}
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </div>
           </div>
         </div>
       </main>
+      <MachineNamePopup
+        isOpen={showMachineNamePopup}
+        onSave={handleMachineNameSave}
+        onCancel={() => setShowMachineNamePopup(false)}
+      />
     </div>
   )
 }
