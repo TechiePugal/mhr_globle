@@ -216,7 +216,7 @@ export default function InvestmentPage() {
       style={{
         backgroundImage: `url(${imageUrl})`,
         backgroundBlendMode: "overlay",
-        backgroundColor: "rgba(0, 0, 0, 0.4)",
+        backgroundColor: "",
       }}
     ></div>
 

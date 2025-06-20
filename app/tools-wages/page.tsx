@@ -173,7 +173,7 @@ export default function ToolsWagesPage() {
         style={{
           backgroundImage: `url(${imageUrl})`,
           backgroundBlendMode: "overlay",
-          backgroundColor: "rgba(0, 0, 0, 0.5)",
+          backgroundColor: "",
         }}
       >
         <div className="space-y-2">
