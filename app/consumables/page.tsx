@@ -136,7 +136,7 @@ export default function ConsumablesPage() {
           style={{
             backgroundImage: `url(${imageUrl})`,
             backgroundBlendMode: "overlay",
-            backgroundColor: "rgba(0, 0, 0, 0.6)",
+            backgroundColor: "",
           }}
         ></div>
 

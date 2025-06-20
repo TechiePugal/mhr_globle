@@ -175,7 +175,7 @@ export default function PowerConsumptionPage() {
           style={{
             backgroundImage: `url(${imageUrl})`,
             backgroundBlendMode: "overlay",
-            backgroundColor: "rgba(0, 0, 0, 0.6)",
+            backgroundColor: "",
           }}
         ></div>
 

@@ -149,7 +149,7 @@ export default function SpaceExpensesPage() {
           style={{
             backgroundImage: `url(${imageUrl})`,
             backgroundBlendMode: "overlay",
-            backgroundColor: "rgba(0, 0, 0, 0.6)",
+            backgroundColor: "",
           }}
         ></div>
 
@@ -200,7 +200,7 @@ export default function SpaceExpensesPage() {
         style={{
           backgroundImage: `url(${imageUrl})`,
           backgroundBlendMode: "overlay",
-          backgroundColor: "",
+          backgroundColor: "rgba(0, 0, 0, 0.5)",
         }}
       >
         <div className="space-y-2">
